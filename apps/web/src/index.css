@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-textPrimary antialiased selection:bg-primary selection:text-black;
+  }
+}
+
+/* Custom glow utility based on the primary color */
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px var(--tw-colors-primaryGlow, rgba(124, 255, 61, 0.4));
+  }
+}
