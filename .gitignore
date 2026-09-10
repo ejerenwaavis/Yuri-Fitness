@@ -12,7 +12,6 @@ apps/web/.env
 # Build outputs
 dist/
 build/
-apps/web/public_html/
 
 # Logs
 npm-debug.log*
