@@ -38,9 +38,23 @@ app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
 app.use('/stripe', stripeRoutes);
 
+import path from 'path';
+
 // Add simple health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+// Serve frontend static assets from public_html
+const publicHtmlPath = path.resolve(__dirname, '../../public_html');
+app.use(express.static(publicHtmlPath));
+
+// Fallback for client-side SPA routing (only for non-API/non-auth routes)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path.startsWith('/stripe')) {
+    return next();
+  }
+  res.sendFile(path.join(publicHtmlPath, 'index.html'));
 });
 
 // Start Server
