@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Play, Plus, Search, Trash2, X, Film, Dumbbell, Flame, CheckCircle, AlertCircle } from 'lucide-react';
 import type { ExerciseInstruction } from '@yuri/shared';
+import { AuthContext } from '../App';
 
 const CATEGORIES = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Cardio', 'Full Body'];
 
 export default function ExerciseLibrary() {
+  const { user } = useContext(AuthContext);
+  const isAdmin = user?.role === 'admin';
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -45,7 +48,13 @@ export default function ExerciseLibrary() {
   // Delete exercise mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/exercises/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('yuri_token');
+      const res = await fetch(`/api/exercises/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       if (!res.ok) throw new Error('Failed to delete exercise');
       return res.json();
     },
@@ -77,12 +86,16 @@ export default function ExerciseLibrary() {
     setIsUploading(true);
 
     try {
+      const token = localStorage.getItem('yuri_token');
       // 1. Upload video file to /api/exercises/upload (pipes to Cloudinary)
       const formData = new FormData();
       formData.append('video', videoFile);
 
       const uploadRes = await fetch('/api/exercises/upload', {
         method: 'POST',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: formData
       });
 
@@ -97,7 +110,10 @@ export default function ExerciseLibrary() {
       // 2. Save exercise instruction record to DB
       const saveRes = await fetch('/api/exercises', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           name: name.trim(),
           category,
@@ -140,19 +156,21 @@ export default function ExerciseLibrary() {
 
   return (
     <div className="p-6 pb-24 lg:pb-6 space-y-6">
-      {/* Header & Upload Button */}
+      {/* Header & Upload Button (Admin Only) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('exercises.title')}</h2>
           <p className="text-textMuted">{t('exercises.subtitle')}</p>
         </div>
-        <button
-          onClick={() => { setErrorMessage(null); setIsUploadOpen(true); }}
-          className="flex items-center justify-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity"
-        >
-          <Plus size={20} />
-          <span>{t('exercises.adminUpload')}</span>
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => { setErrorMessage(null); setIsUploadOpen(true); }}
+            className="flex items-center justify-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity"
+          >
+            <Plus size={20} />
+            <span>{t('exercises.adminUpload')}</span>
+          </button>
+        )}
       </div>
 
       {/* Search and Category Filter */}
@@ -268,13 +286,15 @@ export default function ExerciseLibrary() {
                     >
                       <Play size={14} fill="currentColor" /> {t('exercises.watchGuide')}
                     </button>
-                    <button
-                      onClick={() => handleDelete(id)}
-                      className="text-textMuted hover:text-red-400 p-1 rounded transition-colors"
-                      title={t('exercises.delete')}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDelete(id)}
+                        className="text-textMuted hover:text-red-400 p-1 rounded transition-colors"
+                        title={t('exercises.delete')}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

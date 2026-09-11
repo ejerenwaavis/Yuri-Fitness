@@ -13,14 +13,24 @@
     "button": "Instalar"
   },
   "auth": {
-    "welcome": "Bienvenido",
-    "continueWithGoogle": "Continuar con Google",
-    "or": "o",
-    "email": "Correo electrónico",
+    "welcome": "Bienvenido a Yuri",
+    "signInTab": "Iniciar Sesión",
+    "signUpTab": "Registrarse",
+    "name": "Nombre Completo",
+    "namePlaceholder": "Avis Ejerenwa",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
     "password": "Contraseña",
+    "passwordPlaceholder": "Mínimo 6 caracteres",
     "login": "Iniciar Sesión",
+    "createAccount": "Crear Cuenta",
+    "continueWithGoogle": "Continuar con Google",
+    "or": "o continúa con correo",
     "noAccount": "¿No tienes cuenta?",
-    "signup": "Regístrate"
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "signup": "Regístrate",
+    "signin": "Inicia Sesión",
+    "passwordLength": "La contraseña debe tener al menos 6 caracteres."
   },
   "dashboard": {
     "title": "¿Listo para arrasar?",
@@ -36,7 +46,7 @@
     },
     "stats": {
       "sessions": "Sesiones",
-      "volume": "Volumen (kg)",
+      "volume": "Volumen (kg/lbs)",
       "time": "Tiempo (min)"
     },
     "rings": {
@@ -44,7 +54,8 @@
       "minutes": "Minutos",
       "exercises": "Ejercicios",
       "sets": "Series",
-      "maxWeight": "Peso Máx"
+      "maxWeight": "Peso Máx",
+      "ofGoal": "del objetivo"
     },
     "aiCoach": {
       "title": "Consejos del Entrenador IA (Próximamente)",
@@ -58,7 +69,22 @@
     "exercises": "ejercicios",
     "min": "min",
     "empty": "Aún no has registrado ningún entrenamiento.",
-    "browseLibrary": "Biblioteca de Ejercicios en Video"
+    "browseLibrary": "Biblioteca de Ejercicios en Video",
+    "logWorkoutModalTitle": "Registrar Sesión de Entrenamiento",
+    "date": "Fecha",
+    "duration": "Duración (minutos)",
+    "addExercise": "Añadir Ejercicio",
+    "remove": "Eliminar",
+    "exerciseName": "Nombre del Ejercicio",
+    "exercisePlaceholder": "ej. Press Inclinado con Mancuernas",
+    "sets": "Series",
+    "reps": "Reps",
+    "weight": "Peso",
+    "saveWorkout": "Guardar Entrenamiento",
+    "cancel": "Cancelar",
+    "sessionDetails": "Detalles del Entrenamiento",
+    "totalVolume": "Volumen Total",
+    "close": "Cerrar"
   },
   "exercises": {
     "title": "Biblioteca de Ejercicios",
@@ -100,7 +126,16 @@
     "bmiOver": "Sobrepeso",
     "bmiObese": "Obesidad",
     "bmiDisclaimer": "El IMC es una relación matemática entre altura y peso. No mide directamente la grasa corporal.",
-    "measurementsTitle": "Medidas Corporales",
+    "emptyBmiPrompt": "Introduce tu altura y peso en medidas para calcular tu indicador de IMC en tiempo real.",
+    "logMeasurements": "Registrar Medidas",
+    "modalTitle": "Registrar Instantánea Corporal",
+    "height": "Altura",
+    "weight": "Peso",
+    "unit": "Unidad",
+    "saveSnapshot": "Guardar Medidas",
+    "cancel": "Cancelar",
+    "measurementsTitle": "Medidas Actuales",
+    "historyTitle": "Historial de Medidas",
     "parts": {
       "neck": "Cuello",
       "shoulders": "Hombros",
@@ -108,12 +143,17 @@
       "biceps": "Bíceps",
       "waist": "Cintura",
       "hips": "Caderas",
+      "upperLeg": "Pierna Superior",
+      "lowerLeg": "Pantorrilla",
       "legs": "Piernas"
     }
   },
   "profile": {
     "title": "Perfil",
     "subtitle": "Administra tu cuenta y preferencias.",
+    "role": "Rol",
+    "adminBadge": "Administrador",
+    "userBadge": "Miembro",
     "subscriptionTitle": "Suscripción",
     "subscriptionDesc": "Mejora a Premium para acceso total a análisis con IA e historial ilimitado de entrenamientos.",
     "manageSubscription": "Gestionar Suscripción",

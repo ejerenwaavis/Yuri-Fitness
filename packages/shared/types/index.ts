@@ -2,13 +2,18 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  role?: 'user' | 'admin';
+  avatar?: string;
+  height?: number;
+  weight?: number;
   subscriptionStatus: 'active' | 'inactive' | 'past_due' | 'canceled';
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
 }
 
 export interface Exercise {
-  id: string;
+  id?: string;
+  _id?: string;
   name: string;
   sets: number;
   reps: number;
@@ -16,17 +21,22 @@ export interface Exercise {
 }
 
 export interface WorkoutSession {
-  id: string;
+  id?: string;
+  _id?: string;
   userId: string;
   date: string;
   exercises: Exercise[];
   durationMinutes: number;
+  createdAt?: string;
 }
 
 export interface BodyMeasurement {
-  id: string;
+  id?: string;
+  _id?: string;
   userId: string;
   date: string;
+  height?: number;
+  weight?: number;
   neck?: number;
   shoulders?: number;
   biceps?: number;
@@ -37,6 +47,7 @@ export interface BodyMeasurement {
   lowerLeg?: number;
   unit: 'cm' | 'in';
   bmi?: number;
+  createdAt?: string;
 }
 
 export interface Streak {

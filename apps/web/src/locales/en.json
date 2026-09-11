@@ -13,14 +13,24 @@
     "button": "Install"
   },
   "auth": {
-    "welcome": "Welcome",
-    "continueWithGoogle": "Continue with Google",
-    "or": "or",
+    "welcome": "Welcome to Yuri",
+    "signInTab": "Log In",
+    "signUpTab": "Sign Up",
+    "name": "Full Name",
+    "namePlaceholder": "Avis Ejerenwa",
     "email": "Email",
+    "emailPlaceholder": "you@example.com",
     "password": "Password",
+    "passwordPlaceholder": "At least 6 characters",
     "login": "Log In",
+    "createAccount": "Create Account",
+    "continueWithGoogle": "Continue with Google",
+    "or": "or continue with email",
     "noAccount": "Don't have an account?",
-    "signup": "Sign up"
+    "hasAccount": "Already have an account?",
+    "signup": "Sign Up",
+    "signin": "Log In",
+    "passwordLength": "Password must be at least 6 characters long."
   },
   "dashboard": {
     "title": "Ready to crush it?",
@@ -36,7 +46,7 @@
     },
     "stats": {
       "sessions": "Sessions",
-      "volume": "Volume (lbs)",
+      "volume": "Volume (kg/lbs)",
       "time": "Time (m)"
     },
     "rings": {
@@ -44,7 +54,8 @@
       "minutes": "Minutes",
       "exercises": "Exercises",
       "sets": "Sets",
-      "maxWeight": "Max Weight"
+      "maxWeight": "Max Weight",
+      "ofGoal": "of goal"
     },
     "aiCoach": {
       "title": "AI Coach Insights (Coming Soon)",
@@ -58,7 +69,22 @@
     "exercises": "exercises",
     "min": "min",
     "empty": "No workouts logged yet.",
-    "browseLibrary": "Video Exercise Library"
+    "browseLibrary": "Video Exercise Library",
+    "logWorkoutModalTitle": "Log Workout Session",
+    "date": "Date",
+    "duration": "Duration (minutes)",
+    "addExercise": "Add Exercise",
+    "remove": "Remove",
+    "exerciseName": "Exercise Name",
+    "exercisePlaceholder": "e.g. Incline Bench Press",
+    "sets": "Sets",
+    "reps": "Reps",
+    "weight": "Weight",
+    "saveWorkout": "Save Workout",
+    "cancel": "Cancel",
+    "sessionDetails": "Session Details",
+    "totalVolume": "Total Volume",
+    "close": "Close"
   },
   "exercises": {
     "title": "Exercise Library",
@@ -100,7 +126,16 @@
     "bmiOver": "Over",
     "bmiObese": "Obese",
     "bmiDisclaimer": "BMI is a simple height-to-weight ratio. It does not measure body fat directly.",
-    "measurementsTitle": "Measurements",
+    "emptyBmiPrompt": "Enter your height and weight in measurements to calculate your live BMI gauge.",
+    "logMeasurements": "Log Measurements",
+    "modalTitle": "Record Body Snapshot",
+    "height": "Height",
+    "weight": "Weight",
+    "unit": "Unit",
+    "saveSnapshot": "Save Measurements",
+    "cancel": "Cancel",
+    "measurementsTitle": "Current Measurements",
+    "historyTitle": "Measurement Snapshots",
     "parts": {
       "neck": "Neck",
       "shoulders": "Shoulders",
@@ -108,12 +143,17 @@
       "biceps": "Biceps",
       "waist": "Waist",
       "hips": "Hips",
+      "upperLeg": "Upper Leg",
+      "lowerLeg": "Lower Leg",
       "legs": "Legs"
     }
   },
   "profile": {
     "title": "Profile",
     "subtitle": "Manage your account and settings.",
+    "role": "Role",
+    "adminBadge": "Admin",
+    "userBadge": "Member",
     "subscriptionTitle": "Subscription",
     "subscriptionDesc": "Upgrade to Premium for full access to AI insights and unlimited workout history.",
     "manageSubscription": "Manage Subscription",

@@ -44,8 +44,17 @@ export default function Profile() {
           </div>
         )}
         <div>
-          <h3 className="text-xl font-bold text-textPrimary">{user?.name || 'Test User'}</h3>
-          <p className="text-textMuted">{user?.email || 'test@example.com'}</p>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xl font-bold text-textPrimary">{user?.name || 'User'}</h3>
+            <span className={`text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full border ${
+              user?.role === 'admin' 
+                ? 'bg-primary/20 text-primary border-primary/50' 
+                : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
+            }`}>
+              {user?.role === 'admin' ? t('profile.adminBadge') : t('profile.userBadge')}
+            </span>
+          </div>
+          <p className="text-textMuted text-sm">{user?.email || 'user@yurifitness.com'}</p>
         </div>
       </div>
 
