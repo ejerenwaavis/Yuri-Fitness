@@ -39,6 +39,7 @@ app.use('/api', apiRoutes);
 app.use('/stripe', stripeRoutes);
 
 import path from 'path';
+import fs from 'fs';
 
 // Add simple health check
 app.get('/health', (req, res) => {
@@ -46,7 +47,12 @@ app.get('/health', (req, res) => {
 });
 
 // Serve frontend static assets from public_html
-const publicHtmlPath = path.resolve(__dirname, '../../public_html');
+const candidates = [
+  path.resolve(__dirname, '../../../public_html'),
+  path.resolve(__dirname, '../../public_html'),
+  path.resolve(__dirname, '../public_html')
+];
+const publicHtmlPath = candidates.find(p => fs.existsSync(p)) || candidates[0];
 app.use(express.static(publicHtmlPath));
 
 // Fallback for client-side SPA routing (only for non-API/non-auth routes)
@@ -54,7 +60,11 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path.startsWith('/stripe')) {
     return next();
   }
-  res.sendFile(path.join(publicHtmlPath, 'index.html'));
+  const indexPath = path.join(publicHtmlPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  next();
 });
 
 // Start Server

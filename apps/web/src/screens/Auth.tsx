@@ -8,7 +8,8 @@ export default function Auth() {
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/auth/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

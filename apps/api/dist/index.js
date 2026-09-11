@@ -37,19 +37,29 @@ app.use('/auth', auth_1.default);
 app.use('/api', api_1.default);
 app.use('/stripe', stripe_1.default);
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 // Add simple health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 // Serve frontend static assets from public_html
-const publicHtmlPath = path_1.default.resolve(__dirname, '../../public_html');
+const candidates = [
+    path_1.default.resolve(__dirname, '../../../public_html'),
+    path_1.default.resolve(__dirname, '../../public_html'),
+    path_1.default.resolve(__dirname, '../public_html')
+];
+const publicHtmlPath = candidates.find(p => fs_1.default.existsSync(p)) || candidates[0];
 app.use(express_1.default.static(publicHtmlPath));
 // Fallback for client-side SPA routing (only for non-API/non-auth routes)
 app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/auth') || req.path.startsWith('/stripe')) {
         return next();
     }
-    res.sendFile(path_1.default.join(publicHtmlPath, 'index.html'));
+    const indexPath = path_1.default.join(publicHtmlPath, 'index.html');
+    if (fs_1.default.existsSync(indexPath)) {
+        return res.sendFile(indexPath);
+    }
+    next();
 });
 // Start Server
 connectDB().then(() => {

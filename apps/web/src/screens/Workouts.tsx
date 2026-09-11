@@ -5,7 +5,7 @@ import { Calendar, ChevronRight } from 'lucide-react';
 export default function Workouts() {
   const { data: workouts, isLoading } = useQuery({
     queryKey: ['workouts'],
-    queryFn: () => fetch('http://localhost:3000/api/workouts').then(res => res.json())
+    queryFn: () => fetch('/api/workouts').then(res => res.json())
   });
 
   return (

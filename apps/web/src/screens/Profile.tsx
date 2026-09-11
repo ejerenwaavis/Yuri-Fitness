@@ -7,7 +7,7 @@ export default function Profile() {
 
   const handleSubscribe = async () => {
     try {
-      const res = await fetch('http://localhost:3000/stripe/create-checkout-session', {
+      const res = await fetch('/stripe/create-checkout-session', {
         method: 'POST'
       });
       const data = await res.json();

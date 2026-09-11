@@ -29,6 +29,13 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    proxy: {
+      '/auth': 'http://localhost:3000',
+      '/api': 'http://localhost:3000',
+      '/stripe': 'http://localhost:3000'
+    }
+  },
   build: {
     outDir: '../../public_html',
     emptyOutDir: true
