@@ -69,8 +69,28 @@ app.get('*', (req, res, next) => {
   next();
 });
 
+import { UserModel } from './models/User';
+
+// Ensure default admin role for owner
+const ensureAdminUser = async () => {
+  try {
+    const adminEmails = process.env.ADMIN_EMAILS 
+      ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) 
+      : [];
+    const allAdmins = ['ejerenwaavis@gmail.com', ...adminEmails];
+
+    await UserModel.updateMany(
+      { email: { $in: allAdmins }, role: { $ne: 'admin' } },
+      { $set: { role: 'admin' } }
+    );
+  } catch (e) {
+    console.warn('[API] Could not update default admin role:', e);
+  }
+};
+
 // Start Server
-connectDB().then(() => {
+connectDB().then(async () => {
+  await ensureAdminUser();
   app.listen(PORT, () => {
     console.log(`[API] Server is running on port ${PORT}`);
   });
