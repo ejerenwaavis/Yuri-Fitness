@@ -1,17 +1,21 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function Body() {
+  const { t } = useTranslation();
   const bmi = 24.5; // Stub
   
+  const bodyParts = ['neck', 'shoulders', 'chest', 'biceps', 'waist', 'hips', 'legs'];
+
   return (
     <div className="p-6 pb-24 lg:pb-6 space-y-6">
       <div>
-        <h2 className="text-3xl font-black text-textPrimary tracking-tight">Body</h2>
-        <p className="text-textMuted">Track your measurements and BMI.</p>
+        <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('body.title')}</h2>
+        <p className="text-textMuted">{t('body.subtitle')}</p>
       </div>
 
       <div className="bg-surface p-6 rounded-lg border border-surfaceElevated">
-        <h3 className="text-lg font-bold text-textPrimary mb-4">BMI Gauge</h3>
+        <h3 className="text-lg font-bold text-textPrimary mb-4">{t('body.bmiTitle')}</h3>
         <div className="flex items-center justify-center gap-8">
           <div className="text-5xl font-black text-primary">{bmi}</div>
           <div className="flex-1 max-w-sm">
@@ -22,22 +26,22 @@ export default function Body() {
               <div className="h-full bg-red-500 w-1/4"></div>
             </div>
             <div className="flex justify-between text-xs text-textMuted mt-2">
-              <span>Under</span>
-              <span>Normal</span>
-              <span>Over</span>
-              <span>Obese</span>
+              <span>{t('body.bmiUnder')}</span>
+              <span>{t('body.bmiNormal')}</span>
+              <span>{t('body.bmiOver')}</span>
+              <span>{t('body.bmiObese')}</span>
             </div>
           </div>
         </div>
-        <p className="text-xs text-textMuted mt-4 text-center">BMI is a simple height-to-weight ratio. It does not measure body fat directly.</p>
+        <p className="text-xs text-textMuted mt-4 text-center">{t('body.bmiDisclaimer')}</p>
       </div>
 
       <div className="bg-surface p-6 rounded-lg border border-surfaceElevated">
-        <h3 className="text-lg font-bold text-textPrimary mb-4">Measurements</h3>
+        <h3 className="text-lg font-bold text-textPrimary mb-4">{t('body.measurementsTitle')}</h3>
         <div className="grid grid-cols-2 gap-4">
-          {['Neck', 'Shoulders', 'Chest', 'Biceps', 'Waist', 'Hips', 'Legs'].map(part => (
+          {bodyParts.map(part => (
             <div key={part} className="flex justify-between items-center bg-background p-3 rounded-md border border-surfaceElevated">
-              <span className="text-sm font-medium text-textMuted">{part}</span>
+              <span className="text-sm font-medium text-textMuted">{t(`body.parts.${part}`)}</span>
               <span className="text-textPrimary font-bold">-- cm</span>
             </div>
           ))}

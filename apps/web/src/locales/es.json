@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "workouts": "Entrenos",
+    "body": "Cuerpo",
+    "profile": "Perfil",
+    "logWorkout": "Registrar Entreno"
+  },
+  "install": {
+    "title": "Instalar Yuri Fitness",
+    "desc": "Añadir a la pantalla de inicio para usar sin conexión.",
+    "button": "Instalar"
+  },
+  "auth": {
+    "welcome": "Bienvenido",
+    "continueWithGoogle": "Continuar con Google",
+    "or": "o",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "login": "Iniciar Sesión",
+    "noAccount": "¿No tienes cuenta?",
+    "signup": "Regístrate"
+  },
+  "dashboard": {
+    "title": "¿Listo para arrasar?",
+    "subtitle": "Veamos de qué eres capaz esta semana.",
+    "days": {
+      "mon": "L",
+      "tue": "M",
+      "wed": "X",
+      "thu": "J",
+      "fri": "V",
+      "sat": "S",
+      "sun": "D"
+    },
+    "stats": {
+      "sessions": "Sesiones",
+      "volume": "Volumen (kg)",
+      "time": "Tiempo (min)"
+    },
+    "rings": {
+      "title": "Anillos Semanales",
+      "minutes": "Minutos",
+      "exercises": "Ejercicios",
+      "sets": "Series",
+      "maxWeight": "Peso Máx"
+    },
+    "aiCoach": {
+      "title": "Consejos del Entrenador IA (Próximamente)",
+      "desc": "// TODO: Fase 2: Puntuación de recuperación y optimización de sesiones por IA."
+    }
+  },
+  "workouts": {
+    "title": "Entrenamientos",
+    "subtitle": "Tu historial de entrenamiento reciente.",
+    "loading": "Cargando entrenamientos...",
+    "exercises": "ejercicios",
+    "min": "min",
+    "empty": "Aún no has registrado ningún entrenamiento."
+  },
+  "body": {
+    "title": "Cuerpo",
+    "subtitle": "Monitorea tus medidas y tu IMC.",
+    "bmiTitle": "Indicador IMC",
+    "bmiUnder": "Bajo",
+    "bmiNormal": "Normal",
+    "bmiOver": "Sobrepeso",
+    "bmiObese": "Obesidad",
+    "bmiDisclaimer": "El IMC es una relación matemática entre altura y peso. No mide directamente la grasa corporal.",
+    "measurementsTitle": "Medidas Corporales",
+    "parts": {
+      "neck": "Cuello",
+      "shoulders": "Hombros",
+      "chest": "Pecho",
+      "biceps": "Bíceps",
+      "waist": "Cintura",
+      "hips": "Caderas",
+      "legs": "Piernas"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Administra tu cuenta y preferencias.",
+    "subscriptionTitle": "Suscripción",
+    "subscriptionDesc": "Mejora a Premium para acceso total a análisis con IA e historial ilimitado de entrenamientos.",
+    "manageSubscription": "Gestionar Suscripción",
+    "settings": "Ajustes y Preferencias",
+    "language": "Idioma",
+    "spanish": "Español",
+    "english": "Inglés",
+    "logout": "Cerrar Sesión"
+  }
+}

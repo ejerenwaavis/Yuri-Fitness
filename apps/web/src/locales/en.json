@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "home": "Home",
+    "workouts": "Workouts",
+    "body": "Body",
+    "profile": "Profile",
+    "logWorkout": "Log Workout"
+  },
+  "install": {
+    "title": "Install Yuri Fitness",
+    "desc": "Add to your home screen for offline use.",
+    "button": "Install"
+  },
+  "auth": {
+    "welcome": "Welcome",
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
+    "email": "Email",
+    "password": "Password",
+    "login": "Log In",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign up"
+  },
+  "dashboard": {
+    "title": "Ready to crush it?",
+    "subtitle": "Let's see what you can do this week.",
+    "days": {
+      "mon": "M",
+      "tue": "T",
+      "wed": "W",
+      "thu": "T",
+      "fri": "F",
+      "sat": "S",
+      "sun": "S"
+    },
+    "stats": {
+      "sessions": "Sessions",
+      "volume": "Volume (lbs)",
+      "time": "Time (m)"
+    },
+    "rings": {
+      "title": "Weekly Rings",
+      "minutes": "Minutes",
+      "exercises": "Exercises",
+      "sets": "Sets",
+      "maxWeight": "Max Weight"
+    },
+    "aiCoach": {
+      "title": "AI Coach Insights (Coming Soon)",
+      "desc": "// TODO: Phase 2 AI recovery scoring and session optimization will appear here."
+    }
+  },
+  "workouts": {
+    "title": "Workouts",
+    "subtitle": "Your recent training history.",
+    "loading": "Loading workouts...",
+    "exercises": "exercises",
+    "min": "min",
+    "empty": "No workouts logged yet."
+  },
+  "body": {
+    "title": "Body",
+    "subtitle": "Track your measurements and BMI.",
+    "bmiTitle": "BMI Gauge",
+    "bmiUnder": "Under",
+    "bmiNormal": "Normal",
+    "bmiOver": "Over",
+    "bmiObese": "Obese",
+    "bmiDisclaimer": "BMI is a simple height-to-weight ratio. It does not measure body fat directly.",
+    "measurementsTitle": "Measurements",
+    "parts": {
+      "neck": "Neck",
+      "shoulders": "Shoulders",
+      "chest": "Chest",
+      "biceps": "Biceps",
+      "waist": "Waist",
+      "hips": "Hips",
+      "legs": "Legs"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account and settings.",
+    "subscriptionTitle": "Subscription",
+    "subscriptionDesc": "Upgrade to Premium for full access to AI insights and unlimited workout history.",
+    "manageSubscription": "Manage Subscription",
+    "settings": "Settings & Preferences",
+    "language": "Language",
+    "spanish": "Spanish",
+    "english": "English",
+    "logout": "Log Out"
+  }
+}

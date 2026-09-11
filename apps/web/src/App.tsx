@@ -22,12 +22,16 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
+import { useTranslation } from 'react-i18next';
+
 function Layout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+
   const navItems = [
-    { to: '/', icon: Home, label: 'Home' },
-    { to: '/workouts', icon: Dumbbell, label: 'Workouts' },
-    { to: '/body', icon: Activity, label: 'Body' },
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/', icon: Home, label: t('nav.home') },
+    { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
+    { to: '/body', icon: Activity, label: t('nav.body') },
+    { to: '/profile', icon: User, label: t('nav.profile') },
   ];
 
   return (
@@ -54,7 +58,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="p-4">
           <button className="w-full flex items-center justify-center gap-2 bg-primary text-black font-bold py-3 rounded-md shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90">
-            <Plus size={20} /> Log Workout
+            <Plus size={20} /> {t('nav.logWorkout')}
           </button>
         </div>
       </aside>

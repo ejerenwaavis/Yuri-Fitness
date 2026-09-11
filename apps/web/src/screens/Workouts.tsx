@@ -1,8 +1,10 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Workouts() {
+  const { t } = useTranslation();
   const { data: workouts, isLoading } = useQuery({
     queryKey: ['workouts'],
     queryFn: () => fetch('/api/workouts').then(res => res.json())
@@ -11,12 +13,12 @@ export default function Workouts() {
   return (
     <div className="p-6 pb-24 lg:pb-6 space-y-6">
       <div>
-        <h2 className="text-3xl font-black text-textPrimary tracking-tight">Workouts</h2>
-        <p className="text-textMuted">Your recent training history.</p>
+        <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('workouts.title')}</h2>
+        <p className="text-textMuted">{t('workouts.subtitle')}</p>
       </div>
 
       {isLoading ? (
-        <div className="text-textMuted">Loading...</div>
+        <div className="text-textMuted">{t('workouts.loading')}</div>
       ) : (
         <div className="space-y-4">
           {workouts?.map((w: any) => (
@@ -30,7 +32,7 @@ export default function Workouts() {
                     {new Date(w.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                   </h4>
                   <p className="text-sm text-textMuted">
-                    {w.exercises.length} exercises • {w.durationMinutes} min
+                    {w.exercises.length} {t('workouts.exercises')} • {w.durationMinutes} {t('workouts.min')}
                   </p>
                 </div>
               </div>
@@ -40,7 +42,7 @@ export default function Workouts() {
 
           {workouts?.length === 0 && (
             <div className="text-center p-8 border border-dashed border-surfaceElevated rounded-lg">
-              <p className="text-textMuted mb-4">No workouts logged yet.</p>
+              <p className="text-textMuted mb-4">{t('workouts.empty')}</p>
             </div>
           )}
         </div>
