@@ -11,7 +11,7 @@
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
     "@tanstack/react-query": "^4.29.5",
-    "@yuri/shared": "*",
+    "@yuri/shared": "file:../../packages/shared",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.244.0",
     "react": "^18.2.0",
