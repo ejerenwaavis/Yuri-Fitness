@@ -44,3 +44,17 @@ export interface Streak {
   currentStreak: number;
   lastWorkoutDate: string;
 }
+
+export interface ExerciseInstruction {
+  id?: string;
+  _id?: string;
+  name: string;
+  category: string;
+  description: string;
+  videoUrl: string;
+  thumbnailUrl?: string;
+  cloudinaryPublicId?: string;
+  targetMuscles?: string[];
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  createdAt?: string;
+}

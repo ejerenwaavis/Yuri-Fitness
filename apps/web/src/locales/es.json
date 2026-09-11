@@ -2,6 +2,7 @@
   "nav": {
     "home": "Inicio",
     "workouts": "Entrenos",
+    "exercises": "Biblioteca",
     "body": "Cuerpo",
     "profile": "Perfil",
     "logWorkout": "Registrar Entreno"
@@ -56,7 +57,39 @@
     "loading": "Cargando entrenamientos...",
     "exercises": "ejercicios",
     "min": "min",
-    "empty": "Aún no has registrado ningún entrenamiento."
+    "empty": "Aún no has registrado ningún entrenamiento.",
+    "browseLibrary": "Biblioteca de Ejercicios en Video"
+  },
+  "exercises": {
+    "title": "Biblioteca de Ejercicios",
+    "subtitle": "Mira guías en video e instrucciones para perfeccionar tu técnica.",
+    "searchPlaceholder": "Buscar ejercicios, músculos...",
+    "all": "Todos",
+    "adminUpload": "Subir Guía en Video",
+    "uploadModalTitle": "Subir Video de Ejercicio",
+    "uploadModalSubtitle": "Enviado directamente a Cloudinary para streaming HD rápido",
+    "exerciseName": "Nombre del Ejercicio",
+    "exerciseNamePlaceholder": "ej. Press Inclinado con Mancuernas",
+    "category": "Categoría / Grupo Muscular",
+    "difficulty": "Dificultad",
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado",
+    "targetMuscles": "Músculos Principales (separados por comas)",
+    "targetMusclesPlaceholder": "ej. Pectoral Superior, Deltoides Anterior, Tríceps",
+    "description": "Instrucciones de Técnica y Claves",
+    "descriptionPlaceholder": "Paso 1: Coloca el banco a 30 grados...\nPaso 2: Controla el descenso durante 3 segundos...\nPaso 3: Empuja con firmeza desde el pecho.",
+    "selectVideo": "Seleccionar Archivo de Video (MP4, WebM, MOV)",
+    "uploading": "Subiendo video a Cloudinary...",
+    "save": "Guardar Ejercicio",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este video de ejercicio?",
+    "watchGuide": "Ver Guía",
+    "noExercises": "No se encontraron instrucciones de ejercicio.",
+    "close": "Cerrar",
+    "videoFailed": "Error al subir el video. Asegúrate de que sea un video válido menor a 100MB.",
+    "saveFailed": "Error al guardar la instrucción del ejercicio."
   },
   "body": {
     "title": "Cuerpo",

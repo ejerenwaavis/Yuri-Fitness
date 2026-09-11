@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { Home, Dumbbell, User, Activity, Plus } from 'lucide-react';
+import { Home, Dumbbell, User, Activity, Plus, Film } from 'lucide-react';
 import { InstallPrompt } from './components/InstallPrompt';
 
 import Dashboard from './screens/Dashboard';
 import Workouts from './screens/Workouts';
+import ExerciseLibrary from './screens/ExerciseLibrary';
 import Body from './screens/Body';
 import Profile from './screens/Profile';
 import Auth from './screens/Auth';
@@ -30,6 +31,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { to: '/', icon: Home, label: t('nav.home') },
     { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
+    { to: '/exercises', icon: Film, label: t('nav.exercises') },
     { to: '/body', icon: Activity, label: t('nav.body') },
     { to: '/profile', icon: User, label: t('nav.profile') },
   ];
@@ -72,23 +74,18 @@ function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Bottom Tab Bar for Mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-surfaceElevated px-6 py-2 pb-safe flex justify-between items-center z-40">
-        {navItems.slice(0, 2).map((item) => (
-          <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex flex-col items-center p-2 ` + (isActive ? 'text-primary' : 'text-textMuted')}>
-            <item.icon size={24} />
-          </NavLink>
-        ))}
-        
-        {/* Center FAB */}
-        <div className="relative -top-5">
-          <button className="bg-primary text-black p-4 rounded-full shadow-[0_0_20px_rgba(124,255,61,0.4)] flex items-center justify-center hover:scale-105 transition-transform">
-            <Plus size={28} />
-          </button>
-        </div>
-
-        {navItems.slice(2, 4).map((item) => (
-          <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex flex-col items-center p-2 ` + (isActive ? 'text-primary' : 'text-textMuted')}>
-            <item.icon size={24} />
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-surfaceElevated px-2 py-2 pb-safe flex justify-around items-center z-40">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) => 
+              `flex flex-col items-center p-1.5 transition-colors ` +
+              (isActive ? 'text-primary' : 'text-textMuted hover:text-textPrimary')
+            }
+          >
+            <item.icon size={22} />
+            <span className="text-[10px] font-medium mt-1">{item.label}</span>
           </NavLink>
         ))}
       </nav>
@@ -133,6 +130,7 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/workouts" element={<Workouts />} />
+              <Route path="/exercises" element={<ExerciseLibrary />} />
               <Route path="/body" element={<Body />} />
               <Route path="/profile" element={<Profile />} />
             </Routes>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight, Film } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export default function Workouts() {
@@ -12,9 +13,18 @@ export default function Workouts() {
 
   return (
     <div className="p-6 pb-24 lg:pb-6 space-y-6">
-      <div>
-        <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('workouts.title')}</h2>
-        <p className="text-textMuted">{t('workouts.subtitle')}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('workouts.title')}</h2>
+          <p className="text-textMuted">{t('workouts.subtitle')}</p>
+        </div>
+        <Link
+          to="/exercises"
+          className="inline-flex items-center gap-2 bg-surfaceElevated hover:bg-primary/20 text-primary border border-primary/30 font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+        >
+          <Film size={18} />
+          <span>{t('workouts.browseLibrary')}</span>
+        </Link>
       </div>
 
       {isLoading ? (

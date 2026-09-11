@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "workouts": "Workouts",
+    "exercises": "Library",
     "body": "Body",
     "profile": "Profile",
     "logWorkout": "Log Workout"
@@ -56,7 +57,39 @@
     "loading": "Loading workouts...",
     "exercises": "exercises",
     "min": "min",
-    "empty": "No workouts logged yet."
+    "empty": "No workouts logged yet.",
+    "browseLibrary": "Video Exercise Library"
+  },
+  "exercises": {
+    "title": "Exercise Library",
+    "subtitle": "Watch video guides and instructions to perfect your execution.",
+    "searchPlaceholder": "Search exercises, muscles...",
+    "all": "All",
+    "adminUpload": "Upload Video Guide",
+    "uploadModalTitle": "Upload Exercise Video",
+    "uploadModalSubtitle": "Piped directly to Cloudinary for fast HD streaming",
+    "exerciseName": "Exercise Name",
+    "exerciseNamePlaceholder": "e.g. Incline Dumbbell Press",
+    "category": "Category / Muscle Group",
+    "difficulty": "Difficulty",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "targetMuscles": "Target Muscles (comma separated)",
+    "targetMusclesPlaceholder": "e.g. Upper Chest, Front Delts, Triceps",
+    "description": "Form Instructions & Cues",
+    "descriptionPlaceholder": "Step 1: Set bench to 30 degrees...\nStep 2: Control the descent for 3 seconds...\nStep 3: Press firmly through the chest.",
+    "selectVideo": "Select Video File (MP4, WebM, MOV)",
+    "uploading": "Uploading video to Cloudinary...",
+    "save": "Save Exercise",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this exercise video?",
+    "watchGuide": "Watch Guide",
+    "noExercises": "No exercise instructions found.",
+    "close": "Close",
+    "videoFailed": "Failed to upload video. Please ensure the file is a valid video under 100MB.",
+    "saveFailed": "Failed to save exercise instruction."
   },
   "body": {
     "title": "Body",

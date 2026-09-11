@@ -10,6 +10,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const api_1 = __importDefault(require("./routes/api"));
 const stripe_1 = __importDefault(require("./routes/stripe"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const exercises_1 = __importDefault(require("./routes/exercises"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ app.use('/stripe/webhook', express_1.default.raw({ type: 'application/json' }));
 app.use(express_1.default.json());
 // Routes
 app.use('/auth', auth_1.default);
+app.use('/api/exercises', exercises_1.default);
 app.use('/api', api_1.default);
 app.use('/stripe', stripe_1.default);
 const path_1 = __importDefault(require("path"));

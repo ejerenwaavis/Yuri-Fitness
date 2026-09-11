@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import apiRoutes from './routes/api';
 import stripeRoutes from './routes/stripe';
 import authRoutes from './routes/auth';
+import exerciseRoutes from './routes/exercises';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/api/exercises', exerciseRoutes);
 app.use('/api', apiRoutes);
 app.use('/stripe', stripeRoutes);
 
