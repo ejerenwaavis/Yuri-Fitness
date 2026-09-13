@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,8 +11,11 @@ import {
   Flame,
   HeartPulse,
   Plus,
-  X
+  X,
+  Scale
 } from 'lucide-react';
+import { AuthContext } from '../App';
+import { useUnit } from '../context/UnitContext';
 
 interface OnboardingProps {
   onComplete?: (updatedUser: any) => void;
@@ -33,24 +36,100 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const token = localStorage.getItem('yuri_token');
+  const { unit, setUnit } = useUnit();
+  const { user } = useContext(AuthContext);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form states
-  const [goal, setGoal] = useState<'hypertrophy' | 'strength' | 'fat_loss' | 'endurance'>('hypertrophy');
+  const [goal, setGoal] = useState<'hypertrophy' | 'strength' | 'fat_loss' | 'endurance'>(
+    user?.profile?.goal || 'hypertrophy'
+  );
   const [environment, setEnvironment] = useState<'gym' | 'home'>('gym');
-  const [equipment, setEquipment] = useState<string[]>(['barbell', 'dumbbell', 'cables', 'machine']);
-  const [level, setLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('intermediate');
-  const [daysAvailable, setDaysAvailable] = useState<number>(4);
-  const [sessionLength, setSessionLength] = useState<number>(30);
-  const [age, setAge] = useState<number>(28);
-  const [sex, setSex] = useState<'male' | 'female' | 'other'>('male');
-  const [height, setHeight] = useState<number>(178);
-  const [weight, setWeight] = useState<number>(75);
-  const [injuries, setInjuries] = useState<string[]>([]);
+  const [equipment, setEquipment] = useState<string[]>(
+    user?.profile?.equipment?.length
+      ? user.profile.equipment
+      : ['barbell', 'dumbbell', 'cables', 'machine']
+  );
+  const [level, setLevel] = useState<'beginner' | 'intermediate' | 'advanced'>(
+    user?.profile?.level || 'intermediate'
+  );
+  const [daysAvailable, setDaysAvailable] = useState<number>(user?.profile?.daysAvailable || 4);
+  const [sessionLength, setSessionLength] = useState<number>(user?.profile?.sessionLength || 30);
+  const [age, setAge] = useState<number>(user?.profile?.age || 28);
+  const [sex, setSex] = useState<'male' | 'female' | 'other'>(user?.profile?.sex || 'male');
+
+  // Unit System & Biometrics ('kg' = Metric, 'lbs' = Imperial)
+  const [unitSystem, setUnitSystem] = useState<'kg' | 'lbs'>(() => {
+    return user?.profile?.weightUnit || unit || 'kg';
+  });
+
+  const initialHeightCm = user?.profile?.height || 178;
+  const [heightCm, setHeightCm] = useState<number>(initialHeightCm);
+  const [heightFeet, setHeightFeet] = useState<number>(() => {
+    const totalInches = Math.round(initialHeightCm / 2.54);
+    return Math.floor(totalInches / 12) || 5;
+  });
+  const [heightInches, setHeightInches] = useState<number>(() => {
+    const totalInches = Math.round(initialHeightCm / 2.54);
+    return (totalInches % 12) || 10;
+  });
+
+  const initialWeightKg = user?.profile?.weight || 75;
+  const [displayWeight, setDisplayWeight] = useState<number>(() => {
+    const isImp = (user?.profile?.weightUnit || unit) === 'lbs';
+    return isImp ? Math.round(initialWeightKg * 2.20462) : initialWeightKg;
+  });
+
+  const [injuries, setInjuries] = useState<string[]>(user?.profile?.injuries || []);
   const [customInjuryInput, setCustomInjuryInput] = useState('');
+
+  const handleUnitChange = (newUnit: 'kg' | 'lbs') => {
+    if (newUnit === unitSystem) return;
+    setUnitSystem(newUnit);
+    setUnit(newUnit);
+
+    if (newUnit === 'lbs') {
+      // Metric -> Imperial
+      const inLbs = Math.round(displayWeight * 2.20462);
+      setDisplayWeight(inLbs > 0 ? inLbs : 165);
+
+      const totalInches = Math.round(heightCm / 2.54);
+      const ft = Math.floor(totalInches / 12);
+      const inch = totalInches % 12;
+      setHeightFeet(ft > 0 ? ft : 5);
+      setHeightInches(inch >= 0 ? inch : 10);
+    } else {
+      // Imperial -> Metric
+      const inKg = Math.round((displayWeight / 2.20462) * 2) / 2;
+      setDisplayWeight(inKg > 0 ? inKg : 75);
+
+      const totalInches = (heightFeet * 12) + heightInches;
+      const inCm = Math.round(totalInches * 2.54);
+      setHeightCm(inCm > 0 ? inCm : 178);
+    }
+  };
+
+  const handleHeightCmChange = (val: number) => {
+    setHeightCm(val);
+    const totalInches = Math.round(val / 2.54);
+    setHeightFeet(Math.floor(totalInches / 12) || 0);
+    setHeightInches((totalInches % 12) || 0);
+  };
+
+  const handleHeightFeetChange = (ft: number) => {
+    setHeightFeet(ft);
+    const totalInches = (ft * 12) + heightInches;
+    setHeightCm(Math.round(totalInches * 2.54));
+  };
+
+  const handleHeightInchesChange = (inch: number) => {
+    setHeightInches(inch);
+    const totalInches = (heightFeet * 12) + inch;
+    setHeightCm(Math.round(totalInches * 2.54));
+  };
 
   const toggleEquipment = (item: string) => {
     setEquipment((prev) =>
@@ -90,6 +169,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     setLoading(true);
     setError(null);
 
+    const finalHeight = unitSystem === 'kg'
+      ? (Number(heightCm) || 178)
+      : Math.round(((Number(heightFeet) * 12) + Number(heightInches)) * 2.54) || 178;
+
+    const finalWeight = unitSystem === 'kg'
+      ? (Number(displayWeight) || 75)
+      : Math.round((Number(displayWeight) / 2.20462) * 10) / 10 || 75;
+
     const profileData = {
       goal,
       level,
@@ -99,8 +186,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       injuries,
       age: Number(age) || 25,
       sex,
-      height: Number(height) || 175,
-      weight: Number(weight) || 70,
+      height: finalHeight,
+      weight: finalWeight,
+      weightUnit: unitSystem,
       onboardingCompleted: true
     };
 
@@ -128,6 +216,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         parsed.profile = updatedUser.profile;
         localStorage.setItem('yuri_user', JSON.stringify(parsed));
       }
+
+      // Sync UnitContext & storage
+      setUnit(unitSystem);
+      localStorage.setItem('yuri_unit', unitSystem);
 
       // 2. Automatically generate the first custom workout session
       const resWorkout = await fetch('/api/workouts/generate', {
@@ -168,7 +260,34 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       {/* Pinned Top Indicator */}
       <div className="shrink-0 space-y-1.5 pt-1">
         <div className="flex items-center justify-between text-[11px] font-bold text-textMuted uppercase tracking-wider">
-          <span>Yuri Intake</span>
+          <div className="flex items-center gap-2">
+            <span>Yuri Intake</span>
+            <span className="text-surfaceElevated">•</span>
+            <div className="inline-flex items-center bg-surfaceElevated rounded-md p-0.5 border border-surfaceElevated text-[9px] font-bold">
+              <button
+                type="button"
+                onClick={() => handleUnitChange('kg')}
+                className={`px-1.5 py-0.5 rounded transition-all ${
+                  unitSystem === 'kg'
+                    ? 'bg-primary text-black font-black shadow-xs'
+                    : 'text-textMuted hover:text-textPrimary'
+                }`}
+              >
+                KG
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUnitChange('lbs')}
+                className={`px-1.5 py-0.5 rounded transition-all ${
+                  unitSystem === 'lbs'
+                    ? 'bg-primary text-black font-black shadow-xs'
+                    : 'text-textMuted hover:text-textPrimary'
+                }`}
+              >
+                LBS
+              </button>
+            </div>
+          </div>
           <span className="text-primary font-black">Step {step} of 4</span>
         </div>
 
@@ -426,29 +545,105 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               </div>
             </div>
 
-            {/* Basic Stats Row */}
-            <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
-                  Height (cm)
+            {/* Unit Preference & Basic Stats */}
+            <div className="space-y-1.5 pt-0.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold uppercase text-textMuted tracking-wider flex items-center gap-1.5">
+                  <Scale size={12} className="text-primary" />
+                  <span>Units & Body Stats</span>
                 </label>
-                <input
-                  type="number"
-                  value={height}
-                  onChange={(e) => setHeight(Number(e.target.value))}
-                  className="w-full bg-surface border border-surfaceElevated rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
-                />
+                {/* Metric / Imperial Segmented Pill */}
+                <div className="flex items-center p-0.5 bg-surface rounded-lg border border-surfaceElevated text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => handleUnitChange('kg')}
+                    className={`px-2.5 py-0.5 rounded-md transition-all ${
+                      unitSystem === 'kg'
+                        ? 'bg-primary text-black font-black shadow-xs'
+                        : 'text-textMuted hover:text-textPrimary'
+                    }`}
+                  >
+                    Metric (kg / cm)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleUnitChange('lbs')}
+                    className={`px-2.5 py-0.5 rounded-md transition-all ${
+                      unitSystem === 'lbs'
+                        ? 'bg-primary text-black font-black shadow-xs'
+                        : 'text-textMuted hover:text-textPrimary'
+                    }`}
+                  >
+                    Imperial (lbs / ft)
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(Number(e.target.value))}
-                  className="w-full bg-surface border border-surfaceElevated rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
-                />
+
+              {/* Input row */}
+              <div className="grid grid-cols-2 gap-2">
+                {unitSystem === 'kg' ? (
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
+                      Height (cm)
+                    </label>
+                    <input
+                      type="number"
+                      value={heightCm || ''}
+                      onChange={(e) => handleHeightCmChange(Number(e.target.value))}
+                      placeholder="178"
+                      className="w-full bg-surface border border-surfaceElevated rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
+                      Height (ft & in)
+                    </label>
+                    <div className="flex gap-1.5">
+                      <div className="relative flex-1">
+                        <input
+                          type="number"
+                          value={heightFeet || ''}
+                          onChange={(e) => handleHeightFeetChange(Number(e.target.value))}
+                          placeholder="5"
+                          min={3}
+                          max={7}
+                          className="w-full bg-surface border border-surfaceElevated rounded-lg pl-2 pr-5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                        />
+                        <span className="absolute right-1.5 top-1.5 text-[9px] font-bold text-textMuted pointer-events-none">
+                          ft
+                        </span>
+                      </div>
+                      <div className="relative flex-1">
+                        <input
+                          type="number"
+                          value={heightInches != null ? heightInches : ''}
+                          onChange={(e) => handleHeightInchesChange(Number(e.target.value))}
+                          placeholder="10"
+                          min={0}
+                          max={11}
+                          className="w-full bg-surface border border-surfaceElevated rounded-lg pl-2 pr-5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                        />
+                        <span className="absolute right-1.5 top-1.5 text-[9px] font-bold text-textMuted pointer-events-none">
+                          in
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
+                    Weight ({unitSystem === 'lbs' ? 'lbs' : 'kg'})
+                  </label>
+                  <input
+                    type="number"
+                    value={displayWeight || ''}
+                    onChange={(e) => setDisplayWeight(Number(e.target.value))}
+                    placeholder={unitSystem === 'lbs' ? '165' : '75'}
+                    className="w-full bg-surface border border-surfaceElevated rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                  />
+                </div>
               </div>
             </div>
           </div>
