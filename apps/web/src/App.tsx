@@ -117,7 +117,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               {({ isActive }) => (
                 <>
                   <item.icon size={20} className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
-                  <span className="text-[10px] font-medium mt-0.5 tracking-tight">{item.label}</span>
+                  <span className="text-xs font-bold mt-0.5 tracking-tight">{item.label}</span>
                 </>
               )}
             </NavLink>

@@ -300,32 +300,32 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         </div>
       </div>
 
-      {/* Middle Content Area — Sized to fit comfortably without scrolling */}
+      {/* Middle Content Area */}
       <div className="flex-1 min-h-0 flex flex-col justify-center overflow-y-auto overscroll-contain py-2 pr-0.5">
         {error && (
-          <div className="mb-3 p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+          <div className="mb-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium">
             {error}
           </div>
         )}
 
         {/* STEP 1: Primary Goal */}
         {step === 1 && (
-          <div className="space-y-3 animate-in fade-in duration-200">
+          <div className="space-y-3.5 animate-in fade-in duration-200">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-textPrimary leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-textPrimary leading-tight">
                 What is your primary goal?
               </h2>
-              <p className="text-textMuted text-xs mt-0.5 leading-snug">
+              <p className="text-textMuted text-sm mt-1 leading-normal">
                 Yuri configures your volume, rep ranges, and fatigue curves.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 gap-2.5">
               {[
                 {
                   id: 'hypertrophy',
                   title: 'Build Muscle (Hypertrophy)',
-                  desc: '8-12 rep range, muscle growth, moderate-heavy volume.',
+                  desc: '8-12 rep range, muscle growth, progressive overload volume.',
                   icon: Dumbbell
                 },
                 {
@@ -350,24 +350,24 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 <div
                   key={item.id}
                   onClick={() => setGoal(item.id as any)}
-                  className={`p-2.5 sm:p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
+                  className={`p-3 sm:p-3.5 rounded-2xl border flex items-center gap-3.5 cursor-pointer transition-all ${
                     goal === item.id
                       ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(124,255,61,0.15)]'
                       : 'bg-surface border-surfaceElevated hover:border-textMuted'
                   }`}
                 >
                   <div
-                    className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-colors ${
+                    className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
                       goal === item.id ? 'bg-primary text-black' : 'bg-surfaceElevated text-textMuted'
                     }`}
                   >
-                    <item.icon size={20} />
+                    <item.icon size={22} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-textPrimary text-xs sm:text-sm">{item.title}</h4>
-                    <p className="text-[11px] text-textMuted truncate">{item.desc}</p>
+                    <h4 className="font-bold text-textPrimary text-sm sm:text-base">{item.title}</h4>
+                    <p className="text-xs sm:text-sm text-textMuted truncate">{item.desc}</p>
                   </div>
-                  {goal === item.id && <Check className="text-primary shrink-0" size={18} />}
+                  {goal === item.id && <Check className="text-primary shrink-0" size={20} />}
                 </div>
               ))}
             </div>
@@ -376,12 +376,12 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
         {/* STEP 2: Environment & Equipment */}
         {step === 2 && (
-          <div className="space-y-3 animate-in fade-in duration-200">
+          <div className="space-y-3.5 animate-in fade-in duration-200">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-textPrimary leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-textPrimary leading-tight">
                 Where do you train?
               </h2>
-              <p className="text-textMuted text-xs mt-0.5 leading-snug">
+              <p className="text-textMuted text-sm mt-1 leading-normal">
                 Select your environment and available gear.
               </p>
             </div>
@@ -394,7 +394,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   setEnvironment('gym');
                   setEquipment(['barbell', 'dumbbell', 'cables', 'machine']);
                 }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${
                   environment === 'gym'
                     ? 'bg-primary text-black shadow-sm'
                     : 'text-textMuted hover:text-textPrimary'
@@ -408,7 +408,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   setEnvironment('home');
                   setEquipment(['dumbbell', 'bodyweight', 'resistance_bands']);
                 }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+                className={`py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${
                   environment === 'home'
                     ? 'bg-primary text-black shadow-sm'
                     : 'text-textMuted hover:text-textPrimary'
@@ -420,7 +420,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
             {/* Equipment multiselect */}
             <div>
-              <span className="text-[10px] font-bold uppercase text-textMuted tracking-wider block mb-1.5">
+              <span className="text-xs font-bold uppercase text-textMuted tracking-wider block mb-2">
                 Select available equipment:
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -437,14 +437,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     <div
                       key={eq.id}
                       onClick={() => toggleEquipment(eq.id)}
-                      className={`py-2 px-2.5 rounded-lg border text-xs font-semibold cursor-pointer flex items-center justify-between transition-all ${
+                      className={`py-2.5 px-3 rounded-xl border text-sm font-semibold cursor-pointer flex items-center justify-between transition-all ${
                         selected
                           ? 'bg-primary/15 border-primary text-primary'
                           : 'bg-surface border-surfaceElevated text-textMuted hover:text-textPrimary'
                       }`}
                     >
                       <span className="truncate">{eq.label}</span>
-                      {selected && <Check size={14} className="shrink-0 ml-1" />}
+                      {selected && <Check size={16} className="shrink-0 ml-1" />}
                     </div>
                   );
                 })}
@@ -455,19 +455,19 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
         {/* STEP 3: Commitment & Stats */}
         {step === 3 && (
-          <div className="space-y-2.5 animate-in fade-in duration-200">
+          <div className="space-y-3 animate-in fade-in duration-200">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-textPrimary leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-textPrimary leading-tight">
                 Your Schedule & Level
               </h2>
-              <p className="text-textMuted text-xs mt-0.5 leading-snug">
+              <p className="text-textMuted text-sm mt-1 leading-normal">
                 We tailor workout frequency and session length to your life.
               </p>
             </div>
 
             {/* Level selection */}
             <div>
-              <label className="text-[10px] font-bold uppercase text-textMuted tracking-wider block mb-1">
+              <label className="text-xs font-bold uppercase text-textMuted tracking-wider block mb-1.5">
                 Experience Level
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -480,14 +480,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     key={l.id}
                     type="button"
                     onClick={() => setLevel(l.id as any)}
-                    className={`py-2 px-1 rounded-xl border text-center transition-all ${
+                    className={`py-2.5 px-2 rounded-xl border text-center transition-all ${
                       level === l.id
                         ? 'bg-primary/15 border-primary text-primary'
                         : 'bg-surface border-surfaceElevated text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    <div className="text-xs font-bold leading-tight">{l.label}</div>
-                    <div className="text-[9px] text-textMuted mt-0.5">{l.desc}</div>
+                    <div className="text-sm font-bold leading-tight">{l.label}</div>
+                    <div className="text-xs text-textMuted mt-0.5">{l.desc}</div>
                   </button>
                 ))}
               </div>
@@ -495,19 +495,19 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
             {/* Days per week */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-[10px] font-bold uppercase text-textMuted tracking-wider">
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-xs font-bold uppercase text-textMuted tracking-wider">
                   Days Available / Week
                 </label>
-                <span className="text-xs font-black text-primary">{daysAvailable} days</span>
+                <span className="text-sm font-black text-primary">{daysAvailable} days</span>
               </div>
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 {[2, 3, 4, 5, 6].map((d) => (
                   <button
                     key={d}
                     type="button"
                     onClick={() => setDaysAvailable(d)}
-                    className={`flex-1 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                    className={`flex-1 py-2 rounded-xl border text-sm font-black transition-all ${
                       daysAvailable === d
                         ? 'bg-primary text-black border-primary shadow-sm'
                         : 'bg-surface border-surfaceElevated text-textMuted hover:text-textPrimary'
@@ -521,69 +521,69 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
             {/* Session Length */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-[10px] font-bold uppercase text-textMuted tracking-wider">
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-xs font-bold uppercase text-textMuted tracking-wider">
                   Target Session Duration
                 </label>
-                <span className="text-xs font-black text-primary">{sessionLength} minutes</span>
+                <span className="text-sm font-black text-primary">{sessionLength} minutes</span>
               </div>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-4 gap-2">
                 {[20, 30, 45, 60].map((len) => (
                   <button
                     key={len}
                     type="button"
                     onClick={() => setSessionLength(len)}
-                    className={`py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                    className={`py-2 rounded-xl border text-sm font-black transition-all ${
                       sessionLength === len
                         ? 'bg-primary text-black border-primary shadow-sm'
                         : 'bg-surface border-surfaceElevated text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    {len} min
+                    {len}m
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Unit Preference & Basic Stats */}
-            <div className="space-y-1.5 pt-0.5">
+            <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold uppercase text-textMuted tracking-wider flex items-center gap-1.5">
-                  <Scale size={12} className="text-primary" />
+                <label className="text-xs font-bold uppercase text-textMuted tracking-wider flex items-center gap-1.5">
+                  <Scale size={14} className="text-primary" />
                   <span>Units & Body Stats</span>
                 </label>
                 {/* Metric / Imperial Segmented Pill */}
-                <div className="flex items-center p-0.5 bg-surface rounded-lg border border-surfaceElevated text-[10px] font-bold">
+                <div className="flex items-center p-0.5 bg-surface rounded-lg border border-surfaceElevated text-xs font-bold">
                   <button
                     type="button"
                     onClick={() => handleUnitChange('kg')}
-                    className={`px-2.5 py-0.5 rounded-md transition-all ${
+                    className={`px-3 py-1 rounded-md transition-all ${
                       unitSystem === 'kg'
                         ? 'bg-primary text-black font-black shadow-xs'
                         : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    Metric (kg / cm)
+                    Metric (kg/cm)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleUnitChange('lbs')}
-                    className={`px-2.5 py-0.5 rounded-md transition-all ${
+                    className={`px-3 py-1 rounded-md transition-all ${
                       unitSystem === 'lbs'
                         ? 'bg-primary text-black font-black shadow-xs'
                         : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    Imperial (lbs / ft)
+                    Imperial (lbs/ft)
                   </button>
                 </div>
               </div>
 
               {/* Input row */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {unitSystem === 'kg' ? (
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
+                    <label className="block text-xs font-bold uppercase text-textMuted mb-1">
                       Height (cm)
                     </label>
                     <input
@@ -591,15 +591,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                       value={heightCm || ''}
                       onChange={(e) => handleHeightCmChange(Number(e.target.value))}
                       placeholder="178"
-                      className="w-full bg-surface border border-surfaceElevated rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                      className="w-full bg-surface border border-surfaceElevated rounded-xl px-3 py-2 text-sm font-semibold text-textPrimary focus:outline-none focus:border-primary"
                     />
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
+                    <label className="block text-xs font-bold uppercase text-textMuted mb-1">
                       Height (ft & in)
                     </label>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-2">
                       <div className="relative flex-1">
                         <input
                           type="number"
@@ -608,9 +608,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                           placeholder="5"
                           min={3}
                           max={7}
-                          className="w-full bg-surface border border-surfaceElevated rounded-lg pl-2 pr-5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                          className="w-full bg-surface border border-surfaceElevated rounded-xl pl-3 pr-7 py-2 text-sm font-semibold text-textPrimary focus:outline-none focus:border-primary"
                         />
-                        <span className="absolute right-1.5 top-1.5 text-[9px] font-bold text-textMuted pointer-events-none">
+                        <span className="absolute right-2 top-2 text-xs font-bold text-textMuted pointer-events-none">
                           ft
                         </span>
                       </div>
@@ -622,9 +622,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                           placeholder="10"
                           min={0}
                           max={11}
-                          className="w-full bg-surface border border-surfaceElevated rounded-lg pl-2 pr-5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                          className="w-full bg-surface border border-surfaceElevated rounded-xl pl-3 pr-7 py-2 text-sm font-semibold text-textPrimary focus:outline-none focus:border-primary"
                         />
-                        <span className="absolute right-1.5 top-1.5 text-[9px] font-bold text-textMuted pointer-events-none">
+                        <span className="absolute right-2 top-2 text-xs font-bold text-textMuted pointer-events-none">
                           in
                         </span>
                       </div>
@@ -633,7 +633,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 )}
 
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-textMuted mb-1">
+                  <label className="block text-xs font-bold uppercase text-textMuted mb-1">
                     Weight ({unitSystem === 'lbs' ? 'lbs' : 'kg'})
                   </label>
                   <input
@@ -641,7 +641,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     value={displayWeight || ''}
                     onChange={(e) => setDisplayWeight(Number(e.target.value))}
                     placeholder={unitSystem === 'lbs' ? '165' : '75'}
-                    className="w-full bg-surface border border-surfaceElevated rounded-lg px-2.5 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                    className="w-full bg-surface border border-surfaceElevated rounded-xl px-3 py-2 text-sm font-semibold text-textPrimary focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -651,18 +651,18 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
         {/* STEP 4: Injuries, Limitations & Custom Additions */}
         {step === 4 && (
-          <div className="space-y-2.5 animate-in fade-in duration-200">
+          <div className="space-y-3 animate-in fade-in duration-200">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-textPrimary leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-textPrimary leading-tight">
                 Injuries or Joint Limitations?
               </h2>
-              <p className="text-textMuted text-xs mt-0.5 leading-snug">
+              <p className="text-textMuted text-sm mt-1 leading-normal">
                 Yuri automatically excludes high-stress movements and injects safer substitutes.
               </p>
             </div>
 
             {/* Presets Grid */}
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2">
               {PRESET_INJURIES.map((inj, idx) => {
                 const isSelected =
                   inj.id === 'none'
@@ -673,7 +673,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <div
                     key={inj.id}
                     onClick={() => toggleInjury(inj.id)}
-                    className={`py-1.5 px-2.5 rounded-lg border cursor-pointer font-medium text-xs flex items-center justify-between transition-all ${
+                    className={`py-2.5 px-3 rounded-xl border cursor-pointer font-semibold text-sm flex items-center justify-between transition-all ${
                       idx === 0 ? 'col-span-2' : ''
                     } ${
                       isSelected
@@ -682,18 +682,18 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     }`}
                   >
                     <span className="truncate">{inj.label}</span>
-                    {isSelected && <Check size={14} className="shrink-0 ml-1" />}
+                    {isSelected && <Check size={16} className="shrink-0 ml-1" />}
                   </div>
                 );
               })}
             </div>
 
             {/* Custom Limitation Input */}
-            <div className="space-y-1.5 pt-1">
-              <label className="text-[10px] font-bold uppercase text-textMuted tracking-wider block">
+            <div className="space-y-2 pt-1">
+              <label className="text-xs font-bold uppercase text-textMuted tracking-wider block">
                 Add other injury or limitation:
               </label>
-              <div className="flex gap-1.5 items-center">
+              <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   value={customInjuryInput}
@@ -705,25 +705,25 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     }
                   }}
                   placeholder="e.g. Achilles tendonitis, Hernia, Tennis elbow..."
-                  className="flex-1 bg-surface border border-surfaceElevated rounded-xl px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
+                  className="flex-1 bg-surface border border-surfaceElevated rounded-xl px-3.5 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomInjury}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-surfaceElevated hover:bg-primary hover:text-black text-xs font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
+                  className="flex items-center gap-1 px-4 py-2 bg-surfaceElevated hover:bg-primary hover:text-black text-sm font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
                 >
-                  <Plus size={14} />
+                  <Plus size={16} />
                   <span>Add</span>
                 </button>
               </div>
 
               {/* Custom tags list */}
               {customInjuries.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <div className="flex flex-wrap gap-2 pt-0.5">
                   {customInjuries.map((custom) => (
                     <span
                       key={custom}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30 animate-in fade-in"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30 animate-in fade-in"
                     >
                       <span>⚡ {custom}</span>
                       <button
@@ -731,7 +731,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                         onClick={() => removeCustomInjury(custom)}
                         className="hover:text-red-400 focus:outline-none"
                       >
-                        <X size={12} />
+                        <X size={14} />
                       </button>
                     </span>
                   ))}
@@ -740,8 +740,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             </div>
 
             {/* AI Note */}
-            <div className="p-2 rounded-xl bg-surfaceElevated/60 border border-surfaceElevated flex items-center gap-2 text-[11px] text-textMuted">
-              <Sparkles size={16} className="text-primary shrink-0" />
+            <div className="p-3 rounded-xl bg-surfaceElevated/60 border border-surfaceElevated flex items-center gap-2.5 text-xs sm:text-sm text-textMuted">
+              <Sparkles size={18} className="text-primary shrink-0" />
               <span>
                 Yuri AI dynamically configures starter routines to safeguard your joints.
               </span>
@@ -751,14 +751,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       </div>
 
       {/* Pinned Bottom Navigation Buttons */}
-      <div className="shrink-0 flex items-center justify-between pt-2.5 pb-1 border-t border-surfaceElevated">
+      <div className="shrink-0 flex items-center justify-between pt-3 pb-1 border-t border-surfaceElevated">
         {step > 1 ? (
           <button
             type="button"
             onClick={() => setStep((s) => s - 1)}
-            className="flex items-center gap-1 text-textMuted hover:text-textPrimary text-xs font-bold px-3 py-2 rounded-xl bg-surfaceElevated transition-colors"
+            className="flex items-center gap-1.5 text-textMuted hover:text-textPrimary text-sm font-bold px-4 py-2.5 rounded-xl bg-surfaceElevated transition-colors"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={18} />
             <span>Back</span>
           </button>
         ) : (
@@ -769,23 +769,23 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <button
             type="button"
             onClick={() => setStep((s) => s + 1)}
-            className="flex items-center gap-1.5 bg-primary text-black font-black text-xs px-5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-all ml-auto"
+            className="flex items-center gap-2 bg-primary text-black font-black text-sm px-6 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-all ml-auto"
           >
             <span>Continue</span>
-            <ChevronRight size={16} />
+            <ChevronRight size={18} />
           </button>
         ) : (
           <button
             type="button"
             disabled={loading}
             onClick={handleFinish}
-            className="flex items-center gap-2 bg-primary text-black font-black text-xs px-6 py-2.5 rounded-xl shadow-[0_0_20px_rgba(124,255,61,0.4)] hover:opacity-90 disabled:opacity-50 transition-all ml-auto"
+            className="flex items-center gap-2 bg-primary text-black font-black text-sm px-7 py-3 rounded-xl shadow-[0_0_20px_rgba(124,255,61,0.4)] hover:opacity-90 disabled:opacity-50 transition-all ml-auto"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <Sparkles size={16} />
+                <Sparkles size={18} />
                 <span>Build My Workout</span>
               </>
             )}

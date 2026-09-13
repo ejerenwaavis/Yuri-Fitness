@@ -155,17 +155,17 @@ export default function ExerciseLibrary() {
   };
 
   return (
-    <div className="p-6 pb-24 lg:pb-6 space-y-6">
+    <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-4">
       {/* Header & Upload Button (Admin Only) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('exercises.title')}</h2>
-          <p className="text-textMuted">{t('exercises.subtitle')}</p>
+          <p className="text-sm text-textMuted">{t('exercises.subtitle')}</p>
         </div>
         {isAdmin && (
           <button
             onClick={() => { setErrorMessage(null); setIsUploadOpen(true); }}
-            className="flex items-center justify-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity"
+            className="flex items-center justify-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
           >
             <Plus size={20} />
             <span>{t('exercises.adminUpload')}</span>
@@ -174,7 +174,7 @@ export default function ExerciseLibrary() {
       </div>
 
       {/* Search and Category Filter */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-textMuted" size={18} />
           <input
@@ -182,7 +182,7 @@ export default function ExerciseLibrary() {
             placeholder={t('exercises.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface border border-surfaceElevated rounded-lg pl-10 pr-4 py-2.5 text-textPrimary placeholder:text-textMuted focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-surface border border-surfaceElevated rounded-lg pl-10 pr-4 py-2.5 text-textPrimary placeholder:text-textMuted focus:outline-none focus:border-primary transition-colors text-sm"
           />
         </div>
 
@@ -192,7 +192,7 @@ export default function ExerciseLibrary() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
                 selectedCategory === cat
                   ? 'bg-primary text-black shadow-[0_0_12px_rgba(124,255,61,0.3)]'
                   : 'bg-surface text-textMuted border border-surfaceElevated hover:text-textPrimary'
@@ -254,7 +254,7 @@ export default function ExerciseLibrary() {
                         {item.category}
                       </span>
                       {item.difficulty && (
-                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${getDifficultyColor(item.difficulty)}`}>
+                        <span className={`text-xs uppercase font-bold px-2.5 py-0.5 rounded-full border ${getDifficultyColor(item.difficulty)}`}>
                           {t(`exercises.${item.difficulty}`)}
                         </span>
                       )}
@@ -262,16 +262,16 @@ export default function ExerciseLibrary() {
                     <h3 className="font-bold text-lg text-textPrimary line-clamp-1 group-hover:text-primary transition-colors">
                       {item.name}
                     </h3>
-                    <p className="text-xs text-textMuted line-clamp-2 mt-1">
+                    <p className="text-sm text-textMuted line-clamp-2 mt-1">
                       {item.description}
                     </p>
                   </div>
 
                   {/* Target Muscles tags */}
                   {item.targetMuscles && item.targetMuscles.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {item.targetMuscles.slice(0, 3).map((muscle, idx) => (
-                        <span key={idx} className="text-[11px] bg-surfaceElevated px-2 py-0.5 rounded text-textMuted">
+                        <span key={idx} className="text-xs bg-surfaceElevated px-2.5 py-0.5 rounded-md text-textMuted font-medium">
                           {muscle}
                         </span>
                       ))}
@@ -282,9 +282,9 @@ export default function ExerciseLibrary() {
                   <div className="flex items-center justify-between pt-2 border-t border-surfaceElevated">
                     <button
                       onClick={() => setActiveVideo(item)}
-                      className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                      className="text-sm font-bold text-primary hover:underline flex items-center gap-1.5"
                     >
-                      <Play size={14} fill="currentColor" /> {t('exercises.watchGuide')}
+                      <Play size={16} fill="currentColor" /> {t('exercises.watchGuide')}
                     </button>
                     {isAdmin && (
                       <button

@@ -261,19 +261,19 @@ export default function Body() {
   const selectedB = progressEntries.find((p) => p._id === compareIdB || p.id === compareIdB);
 
   return (
-    <div className="p-4 sm:p-6 pb-24 lg:pb-6 space-y-6 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-4 animate-in fade-in duration-300">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('body.title')}</h2>
-          <p className="text-textMuted">{t('body.subtitle')}</p>
+          <p className="text-sm text-textMuted">{t('body.subtitle')}</p>
         </div>
 
         {/* Tab Controls */}
         <div className="flex items-center p-1 bg-surfaceElevated rounded-full border border-surfaceElevated self-start">
           <button
             onClick={() => setActiveTab('measurements')}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
               activeTab === 'measurements'
                 ? 'bg-primary text-black shadow-md'
                 : 'text-textMuted hover:text-textPrimary'
@@ -283,13 +283,13 @@ export default function Body() {
           </button>
           <button
             onClick={() => setActiveTab('photos')}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'photos'
                 ? 'bg-primary text-black shadow-md'
                 : 'text-textMuted hover:text-textPrimary'
             }`}
           >
-            <Camera size={14} />
+            <Camera size={16} />
             <span>Photos & Compare</span>
           </button>
         </div>
@@ -297,12 +297,12 @@ export default function Body() {
 
       {/* TAB 1: MEASUREMENTS & BMI */}
       {activeTab === 'measurements' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-4 animate-in fade-in duration-200">
           {/* Action Row */}
           <div className="flex justify-end">
             <button
               onClick={openEditModal}
-              className="flex items-center gap-2 bg-primary text-black font-bold px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
+              className="flex items-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
             >
               <Plus size={18} />
               <span>{t('body.logMeasurements')}</span>
@@ -401,9 +401,9 @@ export default function Body() {
                     onClick={openEditModal}
                     className="flex flex-col justify-between p-3.5 rounded-xl bg-surfaceElevated/60 border border-surfaceElevated hover:border-primary/40 cursor-pointer transition-all"
                   >
-                    <span className="text-xs font-semibold text-textMuted">{t(`body.parts.${part}`)}</span>
+                    <span className="text-sm font-semibold text-textMuted">{t(`body.parts.${part}`)}</span>
                     <span
-                      className={`text-lg font-black mt-1 ${
+                      className={`text-xl font-black mt-1 ${
                         rawVal ? 'text-textPrimary' : 'text-textMuted/50'
                       }`}
                     >
@@ -419,16 +419,16 @@ export default function Body() {
 
       {/* TAB 2: PHOTOS & COMPARISON (BLOCK 4) */}
       {activeTab === 'photos' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-4 animate-in fade-in duration-200">
           {/* Action Row */}
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-bold text-textPrimary">Visual Transformations</h3>
-              <p className="text-xs text-textMuted">Log front, side, and back photos with dates</p>
+              <p className="text-sm text-textMuted">Log front, side, and back photos with dates</p>
             </div>
             <button
               onClick={() => setIsPhotoModalOpen(true)}
-              className="flex items-center gap-2 bg-primary text-black font-bold px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
+              className="flex items-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
             >
               <Upload size={16} />
               <span>Upload Progress Photos</span>
@@ -637,7 +637,7 @@ export default function Body() {
                     required
                     value={photoDate}
                     onChange={(e) => setPhotoDate(e.target.value)}
-                    className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                    className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                   />
                 </div>
                 <div>
@@ -648,7 +648,7 @@ export default function Body() {
                     placeholder="75.0"
                     value={photoWeight}
                     onChange={(e) => setPhotoWeight(e.target.value)}
-                    className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                    className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                   />
                 </div>
               </div>
@@ -683,7 +683,7 @@ export default function Body() {
                             <Camera className="text-textMuted opacity-50" size={24} />
                           )}
                         </div>
-                        <label className="cursor-pointer text-[10px] font-bold text-primary hover:underline">
+                        <label className="cursor-pointer text-xs font-bold text-primary hover:underline">
                           <span>{url ? 'Change' : '+ Upload'}</span>
                           <input
                             type="file"
@@ -707,14 +707,14 @@ export default function Body() {
                 <button
                   type="button"
                   onClick={() => setIsPhotoModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-xs text-textMuted hover:text-textPrimary bg-surfaceElevated"
+                  className="px-4 py-2.5 rounded-lg text-sm text-textMuted hover:text-textPrimary bg-surfaceElevated transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saveProgressMutation.isPending}
-                  className="flex items-center gap-2 bg-primary text-black font-bold px-5 py-2 rounded-lg shadow-md hover:opacity-90 disabled:opacity-50 text-xs"
+                  className="flex items-center gap-2 bg-primary text-black font-bold px-5 py-2.5 rounded-lg shadow-md hover:opacity-90 disabled:opacity-50 text-sm transition-opacity"
                 >
                   {saveProgressMutation.isPending ? 'Saving...' : 'Save Progress Entry'}
                 </button>
@@ -809,7 +809,7 @@ export default function Body() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {BODY_PARTS.map((part) => (
                   <div key={part}>
-                    <label className="block text-xs font-medium text-textMuted mb-1">
+                    <label className="block text-xs font-bold text-textMuted mb-1">
                       {t(`body.parts.${part}`)}
                     </label>
                     <input
@@ -840,7 +840,7 @@ export default function Body() {
                         else if (part === 'hips') setHips(val);
                         else setUpperLeg(val);
                       }}
-                      className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                      className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                     />
                   </div>
                 ))}
@@ -850,14 +850,14 @@ export default function Body() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm text-textMuted hover:text-textPrimary bg-surfaceElevated"
+                  className="px-4 py-2.5 rounded-lg text-sm text-textMuted hover:text-textPrimary bg-surfaceElevated transition-colors"
                 >
                   {t('body.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saveMutation.isPending}
-                  className="flex items-center gap-2 bg-primary text-black font-bold px-5 py-2 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-2 bg-primary text-black font-bold px-5 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 disabled:opacity-50 text-sm transition-opacity"
                 >
                   {saveMutation.isPending ? (
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />

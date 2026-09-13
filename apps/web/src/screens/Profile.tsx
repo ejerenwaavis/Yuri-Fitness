@@ -234,7 +234,7 @@ export default function Profile() {
   const isPro = user?.subscriptionStatus === 'pro';
 
   return (
-    <div className="p-4 sm:p-6 pb-24 lg:pb-6 space-y-6 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-4 animate-in fade-in duration-300">
       {/* Page Header */}
       <div>
         <h2 className="text-3xl font-black text-textPrimary tracking-tight">
@@ -256,14 +256,14 @@ export default function Profile() {
             />
           ) : (
             <div className="w-16 h-16 rounded-2xl bg-surfaceElevated border border-surfaceElevated flex items-center justify-center text-primary shadow-md">
-              <UserIcon size={30} />
+              <UserIcon size={32} />
             </div>
           )}
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-xl font-black text-textPrimary">{user?.name || 'Athlete'}</h3>
               <span
-                className={`text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full border ${
+                className={`text-xs uppercase font-black px-2.5 py-0.5 rounded-full border ${
                   user?.role === 'admin'
                     ? 'bg-primary/20 text-primary border-primary/50'
                     : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
@@ -272,13 +272,13 @@ export default function Profile() {
                 {user?.role === 'admin' ? t('profile.adminBadge') : t('profile.userBadge')}
               </span>
             </div>
-            <p className="text-textMuted text-xs mt-0.5">{user?.email || 'user@yurifitness.com'}</p>
+            <p className="text-textMuted text-sm mt-0.5">{user?.email || 'user@yurifitness.com'}</p>
           </div>
         </div>
 
         <button
           onClick={() => setIsAccountOpen(true)}
-          className="text-xs font-bold text-primary bg-primary/10 border border-primary/30 hover:bg-primary/20 px-3 py-1.5 rounded-xl transition-all"
+          className="text-sm font-bold text-primary bg-primary/10 border border-primary/30 hover:bg-primary/20 px-3.5 py-1.5 rounded-xl transition-all"
         >
           Edit
         </button>
@@ -288,13 +288,13 @@ export default function Profile() {
       <div className="bg-surface p-5 rounded-2xl border border-primary/30 relative overflow-hidden shadow-lg">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2.5">
-            <CreditCard className="text-primary" size={20} />
-            <h3 className="text-base font-black text-textPrimary">
+            <CreditCard className="text-primary" size={22} />
+            <h3 className="text-lg font-black text-textPrimary">
               {t('profile.subscriptionTitle', 'Membership Plan')}
             </h3>
           </div>
           <span
-            className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+            className={`text-xs font-black uppercase px-3 py-1 rounded-full ${
               isPro
                 ? 'bg-primary text-black'
                 : 'bg-surfaceElevated text-textMuted border border-surfaceElevated'
@@ -303,14 +303,14 @@ export default function Profile() {
             {isPro ? 'Pro Active' : 'Free Tier'}
           </span>
         </div>
-        <p className="text-textMuted text-xs mb-4">
+        <p className="text-textMuted text-sm mb-4 leading-normal">
           {isPro
             ? 'You have unlimited access to Yuri AI mutations, custom workouts, and progress charts.'
             : t('profile.subscriptionDesc', 'Upgrade to Yuri Pro for unlimited AI adaptations and workouts.')}
         </p>
         <button
           onClick={handleSubscribe}
-          className="w-full sm:w-auto bg-primary text-black px-6 py-2.5 rounded-xl font-black text-xs hover:opacity-95 transition-all shadow-[0_0_15px_rgba(124,255,61,0.25)]"
+          className="w-full sm:w-auto bg-primary text-black px-6 py-2.5 rounded-xl font-black text-sm hover:opacity-95 transition-all shadow-[0_0_15px_rgba(124,255,61,0.25)]"
         >
           {isPro ? t('profile.manageSubscription') : t('profile.upgradeToPro', 'Upgrade to Pro')}
         </button>
@@ -738,7 +738,7 @@ export default function Profile() {
                     <Sparkles size={15} />
                     <span>Intake Flow Option</span>
                   </div>
-                  <p className="text-xs text-textSecondary leading-relaxed">
+                  <p className="text-sm text-textSecondary leading-relaxed">
                     Would you also like to step through the guided 4-step intake questionnaire to fine-tune your personalized Yuri experience?
                   </p>
                 </div>
@@ -752,9 +752,9 @@ export default function Profile() {
                       setFitnessSaved(false);
                       navigate('/onboarding');
                     }}
-                    className="w-full py-3 px-4 rounded-xl bg-primary text-black font-black text-xs hover:opacity-95 flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(124,255,61,0.25)]"
+                    className="w-full py-3.5 px-4 rounded-xl bg-primary text-black font-black text-sm hover:opacity-95 flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(124,255,61,0.25)]"
                   >
-                    <Sliders size={16} />
+                    <Sliders size={18} />
                     <span>Redo Guided Intake Flow</span>
                   </button>
 
@@ -764,7 +764,7 @@ export default function Profile() {
                       setIsFitnessOpen(false);
                       setFitnessSaved(false);
                     }}
-                    className="w-full py-2.5 px-4 rounded-xl bg-surfaceElevated hover:bg-surfaceElevated/80 text-textMuted hover:text-textPrimary text-xs font-bold transition-all border border-surfaceElevated"
+                    className="w-full py-2.5 px-4 rounded-xl bg-surfaceElevated hover:bg-surfaceElevated/80 text-textMuted hover:text-textPrimary text-sm font-bold transition-all border border-surfaceElevated"
                   >
                     Done
                   </button>
@@ -774,7 +774,7 @@ export default function Profile() {
               <>
                 {/* Target Goal */}
                 <div>
-                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase tracking-wider">
                     Primary Goal
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -788,7 +788,7 @@ export default function Profile() {
                         key={g.id}
                         type="button"
                         onClick={() => setGoal(g.id)}
-                        className={`p-2.5 rounded-xl text-xs font-bold border transition-all ${
+                        className={`p-3 rounded-xl text-sm font-bold border transition-all ${
                           goal === g.id
                             ? 'bg-primary/20 text-primary border-primary shadow-sm'
                             : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
@@ -803,16 +803,16 @@ export default function Profile() {
                 {/* Commitment & Duration */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase">
+                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase tracking-wider">
                       Days / Week
                     </label>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {[2, 3, 4, 5, 6].map((d) => (
                         <button
                           key={d}
                           type="button"
                           onClick={() => setDaysAvailable(d)}
-                          className={`w-9 h-9 rounded-xl text-xs font-black border transition-all ${
+                          className={`w-10 h-10 rounded-xl text-sm font-black border transition-all ${
                             daysAvailable === d
                               ? 'bg-primary text-black border-primary'
                               : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
@@ -825,16 +825,16 @@ export default function Profile() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase">
+                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase tracking-wider">
                       Duration (min)
                     </label>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {[20, 30, 45, 60].map((m) => (
                         <button
                           key={m}
                           type="button"
                           onClick={() => setSessionLength(m)}
-                          className={`px-2.5 h-9 rounded-xl text-xs font-black border transition-all ${
+                          className={`px-3 h-10 rounded-xl text-sm font-black border transition-all ${
                             sessionLength === m
                               ? 'bg-primary text-black border-primary'
                               : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
@@ -849,7 +849,7 @@ export default function Profile() {
 
                 {/* Equipment Inventory */}
                 <div>
-                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase tracking-wider">
                     Available Equipment
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -868,7 +868,7 @@ export default function Profile() {
                           key={item.id}
                           type="button"
                           onClick={() => toggleEquipment(item.id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                          className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
                             isSelected
                               ? 'bg-primary/20 text-primary border-primary shadow-sm'
                               : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
@@ -883,7 +883,7 @@ export default function Profile() {
 
                 {/* Joint Exclusions */}
                 <div>
-                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase tracking-wider">
                     Joint Exclusions & Limitations
                   </label>
                   <div className="flex flex-wrap gap-2 mb-3">
@@ -902,7 +902,7 @@ export default function Profile() {
                           key={inj.id}
                           type="button"
                           onClick={() => toggleInjury(inj.id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                          className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all ${
                             isSelected
                               ? 'bg-red-500/20 text-red-400 border-red-500 shadow-sm'
                               : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
@@ -916,7 +916,7 @@ export default function Profile() {
 
                   {/* Custom Limitation Input */}
                   <div className="space-y-1.5">
-                    <label className="block text-[10px] font-bold uppercase text-textMuted tracking-wider">
+                    <label className="block text-xs font-bold uppercase text-textMuted tracking-wider">
                       Add Custom Injury / Limitation
                     </label>
                     <div className="flex gap-2">
@@ -931,14 +931,14 @@ export default function Profile() {
                           }
                         }}
                         placeholder="e.g. Achilles tendonitis, Hernia, Tennis elbow..."
-                        className="flex-1 bg-surfaceElevated border border-surfaceElevated rounded-xl px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
+                        className="flex-1 bg-surfaceElevated border border-surfaceElevated rounded-xl px-3.5 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
                       />
                       <button
                         type="button"
                         onClick={handleAddCustomInjury}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-surfaceElevated hover:bg-primary hover:text-black text-xs font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
+                        className="flex items-center gap-1 px-4 py-2 bg-surfaceElevated hover:bg-primary hover:text-black text-sm font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
                       >
-                        <Plus size={14} />
+                        <Plus size={16} />
                         <span>Add</span>
                       </button>
                     </div>
@@ -951,7 +951,7 @@ export default function Profile() {
                           .map((custom) => (
                             <span
                               key={custom}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30"
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30"
                             >
                               <span>⚡ {custom}</span>
                               <button
@@ -959,7 +959,7 @@ export default function Profile() {
                                 onClick={() => removeCustomInjury(custom)}
                                 className="hover:text-red-400 focus:outline-none"
                               >
-                                <X size={12} />
+                                <X size={14} />
                               </button>
                             </span>
                           ))}
@@ -970,25 +970,25 @@ export default function Profile() {
 
                 {fitnessFeedback && (
                   <div
-                    className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    className={`p-3 rounded-xl text-sm flex items-center gap-2.5 ${
                       fitnessFeedback.type === 'success'
                         ? 'bg-primary/15 text-primary border border-primary/30'
                         : 'bg-red-500/15 text-red-400 border border-red-500/30'
                     }`}
                   >
-                    {fitnessFeedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                    {fitnessFeedback.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
                     <span>{fitnessFeedback.msg}</span>
                   </div>
                 )}
 
-                <div className="pt-3 border-t border-surfaceElevated flex justify-end gap-2">
+                <div className="pt-3 border-t border-surfaceElevated flex justify-end gap-2.5">
                   <button
                     type="button"
                     onClick={() => {
                       setIsFitnessOpen(false);
                       setFitnessSaved(false);
                     }}
-                    className="px-4 py-2 text-xs font-bold text-textMuted hover:text-textPrimary bg-surfaceElevated rounded-xl"
+                    className="px-4 py-2.5 text-sm font-bold text-textMuted hover:text-textPrimary bg-surfaceElevated rounded-xl"
                   >
                     Cancel
                   </button>
@@ -996,7 +996,7 @@ export default function Profile() {
                     type="button"
                     disabled={fitnessUpdating}
                     onClick={handleSaveFitness}
-                    className="bg-primary text-black font-black px-6 py-2 rounded-xl text-xs hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
+                    className="bg-primary text-black font-black px-6 py-2.5 rounded-xl text-sm hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
                   >
                     {fitnessUpdating ? 'Syncing...' : 'Save Profile & Update Routine'}
                   </button>

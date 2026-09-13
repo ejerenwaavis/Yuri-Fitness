@@ -143,12 +143,12 @@ export default function Workouts() {
   };
 
   return (
-    <div className="p-6 pb-24 lg:pb-6 space-y-6 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-4 animate-in fade-in duration-300">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('workouts.title')}</h2>
-          <p className="text-textMuted">{t('workouts.subtitle')}</p>
+          <p className="text-sm text-textMuted">{t('workouts.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -188,21 +188,21 @@ export default function Workouts() {
                     <Calendar size={22} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-base text-textPrimary group-hover:text-primary transition-colors">
+                    <h4 className="font-bold text-base sm:text-lg text-textPrimary group-hover:text-primary transition-colors">
                       {new Date(w.date).toLocaleDateString(undefined, {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric'
                       })}
                     </h4>
-                    <p className="text-xs text-textMuted mt-0.5">
+                    <p className="text-sm text-textMuted mt-0.5">
                       {w.exercises?.length || 0} {t('workouts.exercises')} • {w.durationMinutes} {t('workouts.min')}
                       {volume > 0 && ` • ${volume.toLocaleString()} ${unit}`}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-textMuted group-hover:text-primary transition-colors">
-                  <span className="text-xs font-semibold hidden sm:inline">{t('workouts.sessionDetails')}</span>
+                  <span className="text-sm font-semibold hidden sm:inline">{t('workouts.sessionDetails')}</span>
                   <ChevronRight size={18} />
                 </div>
               </div>
@@ -360,52 +360,52 @@ export default function Workouts() {
                         required
                         value={item.name}
                         onChange={(e) => handleExerciseChange(idx, 'name', e.target.value)}
-                        className="flex-1 bg-surface border border-surfaceElevated rounded-lg px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                        className="flex-1 bg-surface border border-surfaceElevated rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
                       />
                       {exerciseList.length > 1 && (
                         <button
                           type="button"
                           onClick={() => handleRemoveExerciseRow(idx)}
-                          className="text-textMuted hover:text-red-400 p-1 rounded"
+                          className="text-textMuted hover:text-red-400 p-1.5 rounded"
                           title={t('workouts.remove')}
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </button>
                       )}
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="block text-[10px] text-textMuted uppercase font-bold">{t('workouts.sets')}</label>
+                        <label className="block text-xs text-textMuted uppercase font-bold mb-0.5">{t('workouts.sets')}</label>
                         <input
                           type="number"
                           min="1"
                           required
                           value={item.sets}
                           onChange={(e) => handleExerciseChange(idx, 'sets', Number(e.target.value))}
-                          className="w-full bg-surface border border-surfaceElevated rounded-lg px-2 py-1 text-xs text-textPrimary text-center"
+                          className="w-full bg-surface border border-surfaceElevated rounded-lg px-2 py-1.5 text-sm text-textPrimary text-center"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-textMuted uppercase font-bold">{t('workouts.reps')}</label>
+                        <label className="block text-xs text-textMuted uppercase font-bold mb-0.5">{t('workouts.reps')}</label>
                         <input
                           type="number"
                           min="1"
                           required
                           value={item.reps}
                           onChange={(e) => handleExerciseChange(idx, 'reps', Number(e.target.value))}
-                          className="w-full bg-surface border border-surfaceElevated rounded-lg px-2 py-1 text-xs text-textPrimary text-center"
+                          className="w-full bg-surface border border-surfaceElevated rounded-lg px-2 py-1.5 text-sm text-textPrimary text-center"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-textMuted uppercase font-bold">{t('workouts.weight')} ({unit})</label>
+                        <label className="block text-xs text-textMuted uppercase font-bold mb-0.5">{t('workouts.weight')} ({unit})</label>
                         <input
                           type="number"
                           min="0"
                           step="0.5"
                           value={item.weight}
                           onChange={(e) => handleExerciseChange(idx, 'weight', Number(e.target.value))}
-                          className="w-full bg-surface border border-surfaceElevated rounded-lg px-2 py-1 text-xs text-textPrimary text-center"
+                          className="w-full bg-surface border border-surfaceElevated rounded-lg px-2 py-1.5 text-sm text-textPrimary text-center"
                         />
                       </div>
                     </div>
@@ -418,14 +418,14 @@ export default function Workouts() {
                 <button
                   type="button"
                   onClick={() => setIsLogModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm text-textMuted hover:text-textPrimary bg-surfaceElevated transition-colors"
+                  className="px-4 py-2.5 rounded-lg text-sm text-textMuted hover:text-textPrimary bg-surfaceElevated transition-colors"
                 >
                   {t('workouts.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={logMutation.isPending}
-                  className="flex items-center gap-2 bg-primary text-black font-bold px-5 py-2 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  className="flex items-center gap-2 bg-primary text-black font-bold px-5 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 disabled:opacity-50 transition-opacity text-sm"
                 >
                   {logMutation.isPending ? (
                     <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
