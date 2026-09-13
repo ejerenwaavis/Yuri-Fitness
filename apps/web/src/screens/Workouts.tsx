@@ -89,14 +89,27 @@ export default function Workouts() {
     logMutation.mutate({
       date: new Date(workoutDate).toISOString(),
       durationMinutes: Number(durationMinutes) || 30,
-      exercises: validExercises
+      exercises: validExercises.map((ex) => ({
+        name: ex.name,
+        targetSets: ex.sets || 3,
+        targetReps: ex.reps || 10,
+        targetWeight: ex.weight || 0,
+        loggedSets: Array.from({ length: ex.sets || 3 }, () => ({
+          reps: ex.reps || 10,
+          weight: ex.weight || 0,
+          completed: true
+        }))
+      }))
     });
   };
 
   const calculateSessionVolume = (session: WorkoutSession): number => {
     if (!session.exercises) return 0;
     return session.exercises.reduce((total, ex) => {
-      return total + ((ex.sets || 0) * (ex.reps || 0) * (ex.weight || 0));
+      const sets = ex.targetSets || ex.sets || 0;
+      const reps = ex.targetReps || ex.reps || 0;
+      const weight = ex.targetWeight || ex.weight || 0;
+      return total + (sets * reps * weight);
     }, 0);
   };
 
@@ -219,12 +232,12 @@ export default function Workouts() {
                   <div>
                     <h5 className="font-bold text-sm text-textPrimary">{ex.name}</h5>
                     <span className="text-xs text-textMuted">
-                      {ex.sets} sets × {ex.reps} reps
+                      {ex.targetSets || ex.sets || 3} sets × {ex.targetReps || ex.reps || 10} reps
                     </span>
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-black text-primary">
-                      {ex.weight > 0 ? `${ex.weight} kg/lbs` : 'Bodyweight'}
+                      {(ex.targetWeight || ex.weight || 0) > 0 ? `${ex.targetWeight || ex.weight} kg/lbs` : 'Bodyweight'}
                     </span>
                   </div>
                 </div>

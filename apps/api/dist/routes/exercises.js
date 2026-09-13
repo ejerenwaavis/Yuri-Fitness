@@ -3,11 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.seedExerciseDatabase = void 0;
 const express_1 = require("express");
 const multer_1 = __importDefault(require("multer"));
 const cloudinary_1 = require("cloudinary");
-const ExerciseInstruction_1 = require("../models/ExerciseInstruction");
+const Exercise_1 = require("../models/Exercise");
 const auth_1 = require("../middleware/auth");
+const exerciseCatalog_1 = require("../seeds/exerciseCatalog");
 const router = (0, express_1.Router)();
 // Configure Cloudinary
 cloudinary_1.v2.config({
@@ -16,19 +18,17 @@ cloudinary_1.v2.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true
 });
-// Configure Multer for in-memory upload (up to 100MB video)
+// Configure Multer for in-memory upload
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({
     storage,
-    limits: {
-        fileSize: 100 * 1024 * 1024 // 100 MB
-    },
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
     fileFilter: (_req, file, cb) => {
-        if (file.mimetype.startsWith('video/')) {
+        if (file.mimetype.startsWith('video/') || file.mimetype.startsWith('image/')) {
             cb(null, true);
         }
         else {
-            cb(new Error('Only video files (MP4, WebM, MOV, etc.) are allowed'));
+            cb(new Error('Only video or image files are allowed'));
         }
     }
 });
@@ -36,101 +36,66 @@ const upload = (0, multer_1.default)({
 const uploadToCloudinary = (buffer, folder) => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary_1.v2.uploader.upload_stream({
-            resource_type: 'video',
+            resource_type: 'auto',
             folder: folder || 'yuri-fitness',
-            transformation: [
-                { quality: 'auto' }
-            ]
+            transformation: [{ quality: 'auto' }]
         }, (error, result) => {
-            if (error || !result) {
+            if (error || !result)
                 return reject(error || new Error('Upload to Cloudinary failed'));
-            }
             resolve(result);
         });
         stream.end(buffer);
     });
 };
-// Seed initial exercises if collection is empty
-const SEED_EXERCISES = [
-    {
-        name: 'Incline Dumbbell Press',
-        category: 'Chest',
-        difficulty: 'intermediate',
-        targetMuscles: ['Upper Chest', 'Front Delts', 'Triceps'],
-        description: '1. Set bench to 30-degree incline.\n2. Retract shoulder blades, keep chest proud.\n3. Lower dumbbells with control to outside upper chest (3s tempo).\n4. Press firmly up and slightly in without clanking weights at peak.',
-        videoUrl: 'https://res.cloudinary.com/dshxh9vrz/video/upload/yuri-fitness/sample_incline.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=800&auto=format&fit=crop&q=60'
-    },
-    {
-        name: 'Barbell Back Squat',
-        category: 'Legs',
-        difficulty: 'intermediate',
-        targetMuscles: ['Quadriceps', 'Glutes', 'Core'],
-        description: '1. Set feet shoulder-width apart, toes turned slightly out.\n2. Take deep diaphragmatic breath, brace core 360 degrees.\n3. Break at hips and knees together, sink to parallel depth.\n4. Drive through mid-foot to stand up explosively.',
-        videoUrl: 'https://res.cloudinary.com/dshxh9vrz/video/upload/yuri-fitness/sample_squat.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800&auto=format&fit=crop&q=60'
-    },
-    {
-        name: 'Lat Pulldown',
-        category: 'Back',
-        difficulty: 'beginner',
-        targetMuscles: ['Latissimus Dorsi', 'Biceps', 'Rhomboids'],
-        description: '1. Grip bar slightly wider than shoulder width.\n2. Lean back 10-15 degrees, depress and retract scapulae.\n3. Drive elbows down and back toward ribcage to touch collarbone.\n4. Control the ascent to full overhead stretch.',
-        videoUrl: 'https://res.cloudinary.com/dshxh9vrz/video/upload/yuri-fitness/sample_lat.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=60'
-    },
-    {
-        name: 'Standing Dumbbell Shoulder Press',
-        category: 'Shoulders',
-        difficulty: 'intermediate',
-        targetMuscles: ['Anterior Deltoid', 'Lateral Deltoid', 'Triceps'],
-        description: '1. Stand tall with feet hip-width, glutes engaged.\n2. Hold dumbbells at shoulder level with neutral/semi-pronated grip.\n3. Press overhead in a controlled arc without hyperextending spine.\n4. Lower slowly back to ear height.',
-        videoUrl: 'https://res.cloudinary.com/dshxh9vrz/video/upload/yuri-fitness/sample_press.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&auto=format&fit=crop&q=60'
-    },
-    {
-        name: 'Romanian Deadlift (RDL)',
-        category: 'Legs',
-        difficulty: 'intermediate',
-        targetMuscles: ['Hamstrings', 'Glutes', 'Erector Spinae'],
-        description: '1. Hold dumbbells in front of thighs with slight knee bend.\n2. Push hips backward toward the wall behind you.\n3. Keep back flat and barbell close to legs until deep hamstring stretch.\n4. Squeeze glutes and extend hips forward to return.',
-        videoUrl: 'https://res.cloudinary.com/dshxh9vrz/video/upload/yuri-fitness/sample_rdl.mp4',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&auto=format&fit=crop&q=60'
-    }
-];
-const checkAndSeedExercises = async () => {
+// Auto-seed exercises catalog if empty or outdated
+const seedExerciseDatabase = async () => {
     try {
-        const count = await ExerciseInstruction_1.ExerciseInstructionModel.countDocuments();
-        if (count === 0) {
-            console.log('[Exercises] Seeding initial exercise video library...');
-            await ExerciseInstruction_1.ExerciseInstructionModel.insertMany(SEED_EXERCISES);
-            console.log('[Exercises] Seed completed successfully');
+        const count = await Exercise_1.ExerciseModel.countDocuments();
+        if (count < 50) {
+            console.log(`[Exercises] Seeding exercise catalog (${exerciseCatalog_1.EXERCISE_CATALOG.length} items)...`);
+            // Use bulk upsert so existing customized exercises aren't lost
+            for (const ex of exerciseCatalog_1.EXERCISE_CATALOG) {
+                await Exercise_1.ExerciseModel.findOneAndUpdate({ name: ex.name }, { $set: ex }, { upsert: true, new: true });
+            }
+            console.log('[Exercises] Catalog seeding completed successfully.');
         }
     }
     catch (err) {
-        console.warn('[Exercises] Seeding check error:', err);
+        console.warn('[Exercises] Seeding error:', err);
     }
 };
-// Seed on module load
-checkAndSeedExercises();
-// POST /api/exercises/upload - Upload video file directly to Cloudinary (Admin only)
+exports.seedExerciseDatabase = seedExerciseDatabase;
+// Trigger seed check
+(0, exports.seedExerciseDatabase)();
+// POST /api/exercises/seed - Manual re-seed trigger (Admin only)
+router.post('/seed', auth_1.authenticateToken, auth_1.requireAdmin, async (_req, res) => {
+    try {
+        await (0, exports.seedExerciseDatabase)();
+        const count = await Exercise_1.ExerciseModel.countDocuments();
+        res.json({ success: true, count });
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+// POST /api/exercises/upload - Upload video/media directly to Cloudinary (Admin only)
 router.post('/upload', auth_1.authenticateToken, auth_1.requireAdmin, upload.single('video'), async (req, res) => {
     try {
         if (!req.file) {
-            res.status(400).json({ error: 'No video file provided' });
+            res.status(400).json({ error: 'No media file provided' });
             return;
         }
         const folder = process.env.CLOUDINARY_FOLDER || 'yuri-fitness';
         const result = await uploadToCloudinary(req.file.buffer, folder);
-        // Auto-generate thumbnail URL using Cloudinary URL helper
         const thumbnailUrl = cloudinary_1.v2.url(result.public_id, {
-            resource_type: 'video',
+            resource_type: result.resource_type === 'video' ? 'video' : 'image',
             format: 'jpg',
             start_offset: '1.0'
         });
         res.json({
             success: true,
             videoUrl: result.secure_url,
+            mediaUrl: result.secure_url,
             publicId: result.public_id,
             thumbnailUrl,
             duration: result.duration,
@@ -139,25 +104,34 @@ router.post('/upload', auth_1.authenticateToken, auth_1.requireAdmin, upload.sin
     }
     catch (error) {
         console.error('[Exercises] Cloudinary upload error:', error);
-        res.status(500).json({ error: error?.message || 'Video upload failed' });
+        res.status(500).json({ error: error?.message || 'Media upload failed' });
     }
 });
-// GET /api/exercises - List all exercises (Public read)
-router.get('/', async (req, res) => {
+// GET /api/exercises - List all catalog exercises (Filterable)
+router.get('/', auth_1.optionalAuth, async (req, res) => {
     try {
-        const { category, search } = req.query;
+        const { category, muscleGroup, equipment, difficulty, search } = req.query;
         const filter = {};
-        if (category && category !== 'All') {
-            filter.category = category;
+        const targetMuscle = muscleGroup || (category && category !== 'All' ? category : null);
+        if (targetMuscle) {
+            filter.muscleGroups = { $regex: new RegExp(`^${targetMuscle}$`, 'i') };
+        }
+        if (equipment && equipment !== 'All') {
+            filter.equipment = { $in: [equipment] };
+        }
+        if (difficulty && difficulty !== 'All') {
+            filter.difficulty = difficulty;
         }
         if (search && typeof search === 'string' && search.trim()) {
+            const q = search.trim();
             filter.$or = [
-                { name: { $regex: search.trim(), $options: 'i' } },
-                { description: { $regex: search.trim(), $options: 'i' } },
-                { targetMuscles: { $regex: search.trim(), $options: 'i' } }
+                { name: { $regex: q, $options: 'i' } },
+                { muscleGroups: { $regex: q, $options: 'i' } },
+                { equipment: { $regex: q, $options: 'i' } },
+                { substitutionTags: { $regex: q, $options: 'i' } }
             ];
         }
-        const exercises = await ExerciseInstruction_1.ExerciseInstructionModel.find(filter).sort({ createdAt: -1 });
+        const exercises = await Exercise_1.ExerciseModel.find(filter).sort({ name: 1 });
         res.json(exercises);
     }
     catch (error) {
@@ -165,10 +139,10 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: error?.message || 'Failed to fetch exercises' });
     }
 });
-// GET /api/exercises/:id - Get a single exercise (Public read)
+// GET /api/exercises/:id - Get a single exercise
 router.get('/:id', async (req, res) => {
     try {
-        const exercise = await ExerciseInstruction_1.ExerciseInstructionModel.findById(req.params.id);
+        const exercise = await Exercise_1.ExerciseModel.findById(req.params.id);
         if (!exercise) {
             res.status(404).json({ error: 'Exercise not found' });
             return;
@@ -176,28 +150,25 @@ router.get('/:id', async (req, res) => {
         res.json(exercise);
     }
     catch (error) {
-        console.error('[Exercises] Get exercise error:', error);
         res.status(500).json({ error: error?.message || 'Failed to fetch exercise' });
     }
 });
-// POST /api/exercises - Create a new exercise instruction (Admin only)
+// POST /api/exercises - Create a new exercise (Admin only)
 router.post('/', auth_1.authenticateToken, auth_1.requireAdmin, async (req, res) => {
     try {
-        const { name, category, description, videoUrl, thumbnailUrl, cloudinaryPublicId, targetMuscles, difficulty } = req.body;
-        if (!name || !videoUrl || !description) {
-            res.status(400).json({ error: 'Name, videoUrl, and description are required' });
+        const { name, muscleGroups, secondaryMuscles, equipment, mediaUrl, formCues, substitutionTags, difficulty } = req.body;
+        if (!name || !mediaUrl) {
+            res.status(400).json({ error: 'Name and mediaUrl are required' });
             return;
         }
-        const newExercise = await ExerciseInstruction_1.ExerciseInstructionModel.create({
-            name,
-            category: category || 'Chest',
-            description,
-            videoUrl,
-            thumbnailUrl: thumbnailUrl || '',
-            cloudinaryPublicId: cloudinaryPublicId || '',
-            targetMuscles: Array.isArray(targetMuscles)
-                ? targetMuscles
-                : (targetMuscles ? String(targetMuscles).split(',').map(s => s.trim()) : []),
+        const newExercise = await Exercise_1.ExerciseModel.create({
+            name: name.trim(),
+            muscleGroups: Array.isArray(muscleGroups) ? muscleGroups : [muscleGroups || 'Chest'],
+            secondaryMuscles: Array.isArray(secondaryMuscles) ? secondaryMuscles : [],
+            equipment: Array.isArray(equipment) ? equipment : [equipment || 'Bodyweight'],
+            mediaUrl,
+            formCues: Array.isArray(formCues) ? formCues : (formCues ? [formCues] : []),
+            substitutionTags: Array.isArray(substitutionTags) ? substitutionTags : [],
             difficulty: difficulty || 'beginner'
         });
         res.status(201).json(newExercise);
@@ -207,28 +178,31 @@ router.post('/', auth_1.authenticateToken, auth_1.requireAdmin, async (req, res)
         res.status(500).json({ error: error?.message || 'Failed to create exercise' });
     }
 });
-// DELETE /api/exercises/:id - Delete an exercise and its Cloudinary video (Admin only)
+// PUT /api/exercises/:id - Update an exercise (Admin only)
+router.put('/:id', auth_1.authenticateToken, auth_1.requireAdmin, async (req, res) => {
+    try {
+        const updated = await Exercise_1.ExerciseModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        if (!updated) {
+            res.status(404).json({ error: 'Exercise not found' });
+            return;
+        }
+        res.json(updated);
+    }
+    catch (error) {
+        res.status(500).json({ error: error?.message || 'Failed to update exercise' });
+    }
+});
+// DELETE /api/exercises/:id - Delete an exercise (Admin only)
 router.delete('/:id', auth_1.authenticateToken, auth_1.requireAdmin, async (req, res) => {
     try {
-        const exercise = await ExerciseInstruction_1.ExerciseInstructionModel.findById(req.params.id);
+        const exercise = await Exercise_1.ExerciseModel.findByIdAndDelete(req.params.id);
         if (!exercise) {
             res.status(404).json({ error: 'Exercise not found' });
             return;
         }
-        // Delete from Cloudinary if publicId is stored
-        if (exercise.cloudinaryPublicId) {
-            try {
-                await cloudinary_1.v2.uploader.destroy(exercise.cloudinaryPublicId, { resource_type: 'video' });
-            }
-            catch (cloudErr) {
-                console.warn('[Exercises] Cloudinary asset delete warning:', cloudErr);
-            }
-        }
-        await ExerciseInstruction_1.ExerciseInstructionModel.findByIdAndDelete(req.params.id);
-        res.json({ success: true, message: 'Exercise instruction deleted' });
+        res.json({ success: true, message: 'Exercise deleted successfully' });
     }
     catch (error) {
-        console.error('[Exercises] Delete exercise error:', error);
         res.status(500).json({ error: error?.message || 'Failed to delete exercise' });
     }
 });

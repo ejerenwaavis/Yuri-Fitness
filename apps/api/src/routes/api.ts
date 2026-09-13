@@ -1,63 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { WorkoutSessionModel } from '../models/WorkoutSession';
-import { BodyMeasurementModel } from '../models/BodyMeasurement';
 import { UserModel } from '../models/User';
 import { optionalAuth } from '../middleware/auth';
+import { generateWorkoutRoutine } from '../services/workoutGenerator';
 
 const router = Router();
 
-// Apply optionalAuth to all routes so req.user is set if Authorization header is present
 router.use(optionalAuth);
 
 const getUserId = (req: Request): string => {
   return req.user?.id || (req.query.userId as string) || 'guest_user';
 };
-
-// Calculate BMI helper
-const computeBMI = (height?: number, weight?: number, unit: 'cm' | 'in' = 'cm'): number | undefined => {
-  if (!height || !weight || height <= 0 || weight <= 0) return undefined;
-  if (unit === 'in') {
-    return parseFloat(((weight / (height * height)) * 703).toFixed(1));
-  }
-  const heightInMeters = height / 100;
-  return parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
-};
-
-// GET /api/user - Current user profile
-router.get('/user', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = getUserId(req);
-    if (userId === 'guest_user') {
-      res.json({
-        id: 'guest_user',
-        email: 'guest@yurifitness.com',
-        name: 'Guest User',
-        role: 'user',
-        subscriptionStatus: 'inactive'
-      });
-      return;
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    res.json({
-      id: user._id.toString(),
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      avatar: user.avatar,
-      height: user.height,
-      weight: user.weight,
-      subscriptionStatus: user.subscriptionStatus
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // GET /api/workouts - User's workout sessions
 router.get('/workouts', async (req: Request, res: Response): Promise<void> => {
@@ -75,117 +28,179 @@ router.get('/workouts', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// POST /api/workouts - Log a new workout session
+// GET /api/workouts/today - Today's active or upcoming workout
+router.get('/workouts/today', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = getUserId(req);
+    const filter: Record<string, any> = { completed: false };
+    if (userId !== 'guest_user') {
+      filter.userId = userId;
+    }
+
+    // Check for an active uncompleted session
+    let workout = await WorkoutSessionModel.findOne(filter).sort({ date: -1 });
+
+    if (!workout) {
+      // If none active, check user profile to generate one
+      let profile: any = {};
+      if (userId !== 'guest_user') {
+        const user = await UserModel.findById(userId);
+        profile = user?.profile || {};
+      }
+
+      const generated = await generateWorkoutRoutine({ profile });
+      workout = await WorkoutSessionModel.create({
+        userId,
+        date: new Date().toISOString(),
+        durationMinutes: generated.durationMinutes,
+        completed: false,
+        source: 'generated',
+        exercises: generated.exercises
+      });
+    }
+
+    res.json(workout);
+  } catch (err: any) {
+    console.error('[API] Get today workout error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/workouts/:id - Single workout details
+router.get('/workouts/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const workout = await WorkoutSessionModel.findById(req.params.id);
+    if (!workout) {
+      res.status(404).json({ error: 'Workout not found' });
+      return;
+    }
+    res.json(workout);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/workouts/generate - Explicitly generate a fresh workout from profile
+router.post('/workouts/generate', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = getUserId(req);
+
+    // Enforce Free tier cap: 3 workouts / week
+    if (userId !== 'guest_user') {
+      const user = await UserModel.findById(userId);
+      if (user && user.subscriptionStatus === 'free') {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const completedThisWeek = await WorkoutSessionModel.countDocuments({
+          userId,
+          completed: true,
+          date: { $gte: sevenDaysAgo.toISOString() }
+        });
+
+        if (completedThisWeek >= 3) {
+          res.status(403).json({
+            error: 'PAYWALL_TRIGGER',
+            message: "You've reached your 3 free workouts for this week! Upgrade to Yuri Pro for unlimited routines and live AI coaching."
+          });
+          return;
+        }
+      }
+    }
+
+    let profile = req.body.profile;
+    if (!profile && userId !== 'guest_user') {
+      const user = await UserModel.findById(userId);
+      profile = user?.profile;
+    }
+
+    const routine = await generateWorkoutRoutine({ profile: profile || {} });
+
+    const newSession = await WorkoutSessionModel.create({
+      userId,
+      date: new Date().toISOString(),
+      durationMinutes: routine.durationMinutes,
+      completed: false,
+      source: 'generated',
+      exercises: routine.exercises
+    });
+
+    res.status(201).json(newSession);
+  } catch (err: any) {
+    console.error('[API] Generate workout error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/workouts/:id - Update workout session in real-time (logged sets, exercise changes)
+router.put('/workouts/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const updated = await WorkoutSessionModel.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) {
+      res.status(404).json({ error: 'Workout not found' });
+      return;
+    }
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/workouts/:id/complete - Finish workout with RPE
+router.post('/workouts/:id/complete', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { rpe, durationMinutes, exercises } = req.body;
+
+    const workout = await WorkoutSessionModel.findById(req.params.id);
+    if (!workout) {
+      res.status(404).json({ error: 'Workout not found' });
+      return;
+    }
+
+    workout.completed = true;
+    if (rpe) workout.rpe = rpe;
+    if (durationMinutes) workout.durationMinutes = durationMinutes;
+    if (exercises && Array.isArray(exercises)) workout.exercises = exercises as any;
+
+    await workout.save();
+    res.json(workout);
+  } catch (err: any) {
+    console.error('[API] Complete workout error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/workouts - Manual workout creation
 router.post('/workouts', async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = getUserId(req);
-    const { date, durationMinutes, exercises } = req.body;
-
-    if (!exercises || !Array.isArray(exercises) || exercises.length === 0) {
-      res.status(400).json({ error: 'At least one exercise is required' });
-      return;
-    }
+    const { date, durationMinutes, exercises, completed = false, rpe } = req.body;
 
     const newWorkout = await WorkoutSessionModel.create({
       userId,
       date: date || new Date().toISOString(),
       durationMinutes: Number(durationMinutes) || 30,
-      exercises: exercises.map((e: any) => ({
-        name: e.name || 'Exercise',
-        sets: Number(e.sets) || 1,
-        reps: Number(e.reps) || 10,
-        weight: Number(e.weight) || 0
-      }))
+      completed,
+      source: 'manual',
+      rpe,
+      exercises: exercises || []
     });
 
     res.status(201).json(newWorkout);
   } catch (err: any) {
-    console.error('[API] Create workout error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/measurements - User's body measurement snapshots
-router.get('/measurements', async (req: Request, res: Response): Promise<void> => {
+// DELETE /api/workouts/:id - Delete workout session
+router.delete('/workouts/:id', async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = getUserId(req);
-    const filter: Record<string, any> = {};
-    if (userId !== 'guest_user') {
-      filter.userId = userId;
-    }
-    const measurements = await BodyMeasurementModel.find(filter).sort({ date: -1 });
-    res.json(measurements);
+    await WorkoutSessionModel.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/measurements/latest - Latest body measurement snapshot
-router.get('/measurements/latest', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = getUserId(req);
-    const filter: Record<string, any> = {};
-    if (userId !== 'guest_user') {
-      filter.userId = userId;
-    }
-    const latest = await BodyMeasurementModel.findOne(filter).sort({ date: -1 });
-    res.json(latest || null);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /api/measurements - Save body measurement snapshot
-router.post('/measurements', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = getUserId(req);
-    const {
-      height,
-      weight,
-      neck,
-      shoulders,
-      chest,
-      biceps,
-      waist,
-      hips,
-      upperLeg,
-      lowerLeg,
-      unit = 'cm',
-      date
-    } = req.body;
-
-    const numHeight = height ? Number(height) : undefined;
-    const numWeight = weight ? Number(weight) : undefined;
-    const bmi = computeBMI(numHeight, numWeight, unit);
-
-    const snapshot = await BodyMeasurementModel.create({
-      userId,
-      date: date || new Date().toISOString(),
-      height: numHeight,
-      weight: numWeight,
-      neck: neck ? Number(neck) : undefined,
-      shoulders: shoulders ? Number(shoulders) : undefined,
-      chest: chest ? Number(chest) : undefined,
-      biceps: biceps ? Number(biceps) : undefined,
-      waist: waist ? Number(waist) : undefined,
-      hips: hips ? Number(hips) : undefined,
-      upperLeg: upperLeg ? Number(upperLeg) : undefined,
-      lowerLeg: lowerLeg ? Number(lowerLeg) : undefined,
-      unit,
-      bmi
-    });
-
-    // Update user record if height or weight provided
-    if (userId !== 'guest_user' && (numHeight || numWeight)) {
-      const updateData: Record<string, any> = {};
-      if (numHeight) updateData.height = numHeight;
-      if (numWeight) updateData.weight = numWeight;
-      await UserModel.findByIdAndUpdate(userId, updateData);
-    }
-
-    res.status(201).json(snapshot);
-  } catch (err: any) {
-    console.error('[API] Create measurement error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -199,7 +214,6 @@ router.get('/stats/weekly', async (req: Request, res: Response): Promise<void> =
       filter.userId = userId;
     }
 
-    // Workouts in the last 7 days
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     filter.date = { $gte: sevenDaysAgo.toISOString() };
@@ -216,23 +230,26 @@ router.get('/stats/weekly', async (req: Request, res: Response): Promise<void> =
       if (Array.isArray(w.exercises)) {
         totalExercises += w.exercises.length;
         w.exercises.forEach((ex) => {
-          totalSets += ex.sets || 0;
-          if (ex.weight && ex.weight > maxWeight) {
-            maxWeight = ex.weight;
+          totalSets += ex.targetSets || 0;
+          if (ex.targetWeight && ex.targetWeight > maxWeight) {
+            maxWeight = ex.targetWeight;
+          }
+          if (Array.isArray(ex.loggedSets)) {
+            ex.loggedSets.forEach(ls => {
+              if (ls.weight && ls.weight > maxWeight) maxWeight = ls.weight;
+            });
           }
         });
       }
     });
 
-    // Realistic weekly goals
     const goals = {
-      minutes: 150,    // 150 min cardio/training goal
-      exercises: 12,   // 12 distinct exercises
-      sets: 36,        // 36 total sets
-      maxWeight: 100   // 100 kg / lbs benchmark
+      minutes: 150,
+      exercises: 12,
+      sets: 36,
+      maxWeight: 100
     };
 
-    // Independent percentage calculations
     const percentages = {
       minutes: Math.min(100, Math.round((totalMinutes / goals.minutes) * 100)),
       exercises: Math.min(100, Math.round((totalExercises / goals.exercises) * 100)),

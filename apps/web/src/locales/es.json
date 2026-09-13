@@ -119,7 +119,7 @@
   },
   "body": {
     "title": "Cuerpo",
-    "subtitle": "Monitorea tus medidas y tu IMC.",
+    "subtitle": "Monitorea tus medidas, progreso visual e IMC.",
     "bmiTitle": "Indicador IMC",
     "bmiUnder": "Bajo",
     "bmiNormal": "Normal",
@@ -134,7 +134,7 @@
     "unit": "Unidad",
     "saveSnapshot": "Guardar Medidas",
     "cancel": "Cancelar",
-    "measurementsTitle": "Medidas Actuales",
+    "measurementsTitle": "Medidas",
     "historyTitle": "Historial de Medidas",
     "parts": {
       "neck": "Cuello",
@@ -155,12 +155,50 @@
     "adminBadge": "Administrador",
     "userBadge": "Miembro",
     "subscriptionTitle": "Suscripción",
-    "subscriptionDesc": "Mejora a Premium para acceso total a análisis con IA e historial ilimitado de entrenamientos.",
+    "subscriptionDesc": "Mejora a Yuri Pro para adaptaciones con IA ilimitadas y entrenamientos completos.",
     "manageSubscription": "Gestionar Suscripción",
     "settings": "Ajustes y Preferencias",
     "language": "Idioma",
     "spanish": "Español",
     "english": "Inglés",
     "logout": "Cerrar Sesión"
+  },
+  "onboarding": {
+    "title": "Bienvenido a Yuri",
+    "step": "Paso {{step}} de 4",
+    "goalQuestion": "¿Cuál es tu objetivo principal?",
+    "envQuestion": "¿Dónde entrenas?",
+    "commitmentQuestion": "Tu Horario y Nivel",
+    "injuryQuestion": "¿Lesiones o Limitaciones Articulares?",
+    "continue": "Continuar",
+    "back": "Atrás",
+    "buildWorkout": "Crear Mi Entrenamiento"
+  },
+  "runner": {
+    "exerciseOf": "Ejercicio {{current}} de {{total}}",
+    "finish": "Terminar",
+    "restTimer": "Cronómetro de Descanso",
+    "set": "Serie",
+    "target": "Objetivo",
+    "reps": "Reps",
+    "weight": "Peso",
+    "done": "Listo",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "finishWorkout": "Finalizar Entrenamiento",
+    "workoutComplete": "¡Entrenamiento Completado!",
+    "rpeQuestion": "¿Cómo sentiste la sesión?",
+    "logAndFinish": "Guardar y Finalizar"
+  },
+  "ai": {
+    "drawerTitle": "Yuri IA",
+    "coachBadge": "Entrenador en Vivo",
+    "subTitle": "Mutaciones adaptativas de entrenamiento",
+    "quickAdjust": "Ajustes Rápidos",
+    "inputPlaceholder": "Pídele a Yuri ajustar, acortar o cambiar ejercicios...",
+    "shorten20": "⚡ Solo 20 min",
+    "hurts": "🩹 Me duele (cambiar)",
+    "noGym": "🏨 Sin gimnasio hoy",
+    "moreIntense": "💪 Más intenso"
   }
 }

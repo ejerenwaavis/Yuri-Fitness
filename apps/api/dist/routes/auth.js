@@ -64,8 +64,7 @@ router.post('/register', async (req, res) => {
                 name: user.name,
                 role: user.role,
                 avatar: user.avatar,
-                height: user.height,
-                weight: user.weight,
+                profile: user.profile,
                 subscriptionStatus: user.subscriptionStatus
             }
         });
@@ -114,8 +113,7 @@ router.post('/login', async (req, res) => {
                 name: user.name,
                 role: user.role,
                 avatar: user.avatar,
-                height: user.height,
-                weight: user.weight,
+                profile: user.profile,
                 subscriptionStatus: user.subscriptionStatus
             }
         });
@@ -183,8 +181,7 @@ router.post('/google', async (req, res) => {
                 name: user.name,
                 role: user.role,
                 avatar: user.avatar,
-                height: user.height,
-                weight: user.weight,
+                profile: user.profile,
                 subscriptionStatus: user.subscriptionStatus,
             }
         });
@@ -208,8 +205,7 @@ router.get('/me', auth_1.authenticateToken, async (req, res) => {
             name: user.name,
             role: user.role,
             avatar: user.avatar,
-            height: user.height,
-            weight: user.weight,
+            profile: user.profile,
             subscriptionStatus: user.subscriptionStatus
         });
     }

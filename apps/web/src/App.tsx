@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { Home, Dumbbell, User, Activity, Plus, Film } from 'lucide-react';
+import { BrowserRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom';
+import { Home, Dumbbell, User, Activity, Plus, Film, Sparkles } from 'lucide-react';
 import { InstallPrompt } from './components/InstallPrompt';
 
 import Dashboard from './screens/Dashboard';
@@ -9,31 +9,49 @@ import ExerciseLibrary from './screens/ExerciseLibrary';
 import Body from './screens/Body';
 import Profile from './screens/Profile';
 import Auth from './screens/Auth';
+import Onboarding from './screens/Onboarding';
+import WorkoutRunner from './screens/WorkoutRunner';
 
 // Simple Auth Context
 interface AuthContextType {
   user: any;
   login: (token: string, userData: any) => void;
   logout: () => void;
+  updateUser: (userData: any) => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   login: () => {},
   logout: () => {},
+  updateUser: () => {}
 });
 
 import { useTranslation } from 'react-i18next';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
+  const location = useLocation();
+
+  // Full-screen modes: Runner and Onboarding hide standard app navigation chrome
+  const isFullScreen =
+    location.pathname.startsWith('/runner') || location.pathname === '/onboarding';
+
+  if (isFullScreen) {
+    return (
+      <div className="min-h-screen bg-background text-textPrimary">
+        {children}
+        <InstallPrompt />
+      </div>
+    );
+  }
 
   const navItems = [
     { to: '/', icon: Home, label: t('nav.home') },
     { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
     { to: '/exercises', icon: Film, label: t('nav.exercises') },
     { to: '/body', icon: Activity, label: t('nav.body') },
-    { to: '/profile', icon: User, label: t('nav.profile') },
+    { to: '/profile', icon: User, label: t('nav.profile') }
   ];
 
   return (
@@ -48,9 +66,11 @@ function Layout({ children }: { children: React.ReactNode }) {
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => 
+              className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-md transition-colors ` +
-                (isActive ? 'bg-primary/10 text-primary' : 'text-textMuted hover:bg-surfaceElevated hover:text-textPrimary')
+                (isActive
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-textMuted hover:bg-surfaceElevated hover:text-textPrimary')
               }
             >
               <item.icon size={20} />
@@ -59,17 +79,18 @@ function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
         <div className="p-4">
-          <button className="w-full flex items-center justify-center gap-2 bg-primary text-black font-bold py-3 rounded-md shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90">
+          <NavLink
+            to="/workouts"
+            className="w-full flex items-center justify-center gap-2 bg-primary text-black font-bold py-3 rounded-md shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity"
+          >
             <Plus size={20} /> {t('nav.logWorkout')}
-          </button>
+          </NavLink>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto pb-20 lg:pb-0">
-        <div className="max-w-5xl mx-auto w-full h-full">
-          {children}
-        </div>
+        <div className="max-w-5xl mx-auto w-full h-full">{children}</div>
         <InstallPrompt />
       </main>
 
@@ -79,7 +100,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           <NavLink
             key={item.to}
             to={item.to}
-            className={({ isActive }) => 
+            className={({ isActive }) =>
               `flex flex-col items-center p-1.5 transition-colors ` +
               (isActive ? 'text-primary' : 'text-textMuted hover:text-textPrimary')
             }
@@ -101,7 +122,11 @@ export default function App() {
     // Check local storage for session on mount
     const storedUser = localStorage.getItem('yuri_user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Error parsing stored user', e);
+      }
     }
     setLoading(false);
   }, []);
@@ -118,21 +143,48 @@ export default function App() {
     setUser(null);
   };
 
-  if (loading) return null; // Or a spinner
+  const updateUser = (userData: any) => {
+    localStorage.setItem('yuri_user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {!user ? (
         <Auth />
       ) : (
         <BrowserRouter>
           <Layout>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              {/* Onboarding Wizard route */}
+              <Route
+                path="/onboarding"
+                element={<Onboarding onComplete={(updated) => updateUser(updated)} />}
+              />
+
+              {/* Active Workout Runner Route */}
+              <Route path="/runner/:id" element={<WorkoutRunner />} />
+
+              {/* Standard Tab Routes */}
+              <Route
+                path="/"
+                element={
+                  user.profile?.onboardingCompleted === false ? (
+                    <Navigate to="/onboarding" replace />
+                  ) : (
+                    <Dashboard />
+                  )
+                }
+              />
               <Route path="/workouts" element={<Workouts />} />
               <Route path="/exercises" element={<ExerciseLibrary />} />
               <Route path="/body" element={<Body />} />
               <Route path="/profile" element={<Profile />} />
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>
         </BrowserRouter>

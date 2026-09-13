@@ -75,8 +75,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         role: user.role,
         avatar: user.avatar,
-        height: user.height,
-        weight: user.weight,
+        profile: user.profile,
         subscriptionStatus: user.subscriptionStatus
       }
     });
@@ -133,8 +132,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         role: user.role,
         avatar: user.avatar,
-        height: user.height,
-        weight: user.weight,
+        profile: user.profile,
         subscriptionStatus: user.subscriptionStatus
       }
     });
@@ -209,8 +207,7 @@ router.post('/google', async (req: Request, res: Response): Promise<void> => {
         name: user.name,
         role: user.role,
         avatar: user.avatar,
-        height: user.height,
-        weight: user.weight,
+        profile: user.profile,
         subscriptionStatus: user.subscriptionStatus,
       }
     });
@@ -235,8 +232,7 @@ router.get('/me', authenticateToken, async (req: Request, res: Response): Promis
       name: user.name,
       role: user.role,
       avatar: user.avatar,
-      height: user.height,
-      weight: user.weight,
+      profile: user.profile,
       subscriptionStatus: user.subscriptionStatus
     });
   } catch (error: any) {

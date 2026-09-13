@@ -5,16 +5,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkoutSessionModel = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
-const ExerciseItemSchema = new mongoose_1.default.Schema({
+const LoggedSetSchema = new mongoose_1.default.Schema({
+    reps: { type: Number, required: true },
+    weight: { type: Number, required: true },
+    completed: { type: Boolean, default: true }
+}, { _id: false });
+const SessionExerciseSchema = new mongoose_1.default.Schema({
+    exerciseId: { type: String },
     name: { type: String, required: true, trim: true },
-    sets: { type: Number, required: true, default: 1 },
-    reps: { type: Number, required: true, default: 10 },
-    weight: { type: Number, required: true, default: 0 }
-});
+    targetSets: { type: Number, required: true, default: 3 },
+    targetReps: { type: Number, required: true, default: 10 },
+    targetWeight: { type: Number, required: true, default: 0 },
+    loggedSets: [LoggedSetSchema],
+    rpe: { type: String }, // e.g. '😫' | '😐' | '🙂' | '💪' | '🔥'
+    mediaUrl: { type: String },
+    formCues: [{ type: String }]
+}, { _id: true });
 const WorkoutSessionSchema = new mongoose_1.default.Schema({
     userId: { type: String, required: true, index: true },
     date: { type: String, required: true, default: () => new Date().toISOString() },
-    durationMinutes: { type: Number, required: true, default: 30 },
-    exercises: [ExerciseItemSchema]
+    durationMinutes: { type: Number, required: true, default: 45 },
+    completed: { type: Boolean, default: false, index: true },
+    source: {
+        type: String,
+        enum: ['generated', 'ai-edited', 'manual'],
+        default: 'generated'
+    },
+    exercises: [SessionExerciseSchema],
+    rpe: { type: String } // Overall session RPE emoji
 }, { timestamps: true });
 exports.WorkoutSessionModel = mongoose_1.default.model('WorkoutSession', WorkoutSessionSchema);

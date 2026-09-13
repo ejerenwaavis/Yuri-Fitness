@@ -6,6 +6,9 @@ import apiRoutes from './routes/api';
 import stripeRoutes from './routes/stripe';
 import authRoutes from './routes/auth';
 import exerciseRoutes from './routes/exercises';
+import userRoutes from './routes/users';
+import progressRoutes from './routes/progress';
+import aiRoutes from './routes/ai';
 
 dotenv.config();
 
@@ -36,7 +39,10 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/exercises', exerciseRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api', apiRoutes);
 app.use('/stripe', stripeRoutes);
 
