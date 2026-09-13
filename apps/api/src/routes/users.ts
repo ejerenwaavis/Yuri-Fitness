@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { UserModel } from '../models/User';
 import { optionalAuth, authenticateToken } from '../middleware/auth';
 
@@ -106,6 +107,47 @@ router.put('/profile', optionalAuth, async (req: Request, res: Response): Promis
   } catch (err: any) {
     console.error('[Users] Update profile error:', err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/users/change-password - Change current user's password
+router.post('/change-password', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+      res.status(400).json({ error: 'New password must be at least 6 characters long' });
+      return;
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // If user already has a password, verify currentPassword
+    if (user.password) {
+      if (!currentPassword) {
+        res.status(400).json({ error: 'Current password is required' });
+        return;
+      }
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        res.status(400).json({ error: 'Current password is incorrect' });
+        return;
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err: any) {
+    console.error('[Users] Change password error:', err);
+    res.status(500).json({ error: err.message || 'Failed to update password' });
   }
 });
 

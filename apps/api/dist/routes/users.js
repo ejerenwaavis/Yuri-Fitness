@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const User_1 = require("../models/User");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
@@ -101,6 +105,42 @@ router.put('/profile', auth_1.optionalAuth, async (req, res) => {
     catch (err) {
         console.error('[Users] Update profile error:', err);
         res.status(500).json({ error: err.message });
+    }
+});
+// POST /api/users/change-password - Change current user's password
+router.post('/change-password', auth_1.authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { currentPassword, newPassword } = req.body;
+        if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+            res.status(400).json({ error: 'New password must be at least 6 characters long' });
+            return;
+        }
+        const user = await User_1.UserModel.findById(userId);
+        if (!user) {
+            res.status(404).json({ error: 'User not found' });
+            return;
+        }
+        // If user already has a password, verify currentPassword
+        if (user.password) {
+            if (!currentPassword) {
+                res.status(400).json({ error: 'Current password is required' });
+                return;
+            }
+            const isMatch = await bcryptjs_1.default.compare(currentPassword, user.password);
+            if (!isMatch) {
+                res.status(400).json({ error: 'Current password is incorrect' });
+                return;
+            }
+        }
+        const hashedPassword = await bcryptjs_1.default.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+        res.json({ success: true, message: 'Password updated successfully' });
+    }
+    catch (err) {
+        console.error('[Users] Change password error:', err);
+        res.status(500).json({ error: err.message || 'Failed to update password' });
     }
 });
 exports.default = router;
