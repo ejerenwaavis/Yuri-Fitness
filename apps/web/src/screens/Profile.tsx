@@ -20,7 +20,8 @@ import {
   Sparkles,
   Flame,
   KeyRound,
-  Sliders
+  Sliders,
+  Plus
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../App';
@@ -58,6 +59,7 @@ export default function Profile() {
   const [level, setLevel] = useState(user?.profile?.level || 'intermediate');
   const [equipment, setEquipment] = useState<string[]>(user?.profile?.equipment || ['barbell', 'dumbbell', 'bodyweight']);
   const [injuries, setInjuries] = useState<string[]>(user?.profile?.injuries || []);
+  const [customInjuryInput, setCustomInjuryInput] = useState('');
   const [fitnessUpdating, setFitnessUpdating] = useState(false);
   const [fitnessFeedback, setFitnessFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
@@ -198,6 +200,20 @@ export default function Profile() {
     setInjuries((prev) =>
       prev.includes(inj) ? prev.filter((i) => i !== inj) : [...prev, inj]
     );
+  };
+
+  const handleAddCustomInjury = () => {
+    const trimmed = customInjuryInput.trim();
+    if (!trimmed) return;
+    setInjuries((prev) => {
+      if (prev.some((x) => x.toLowerCase() === trimmed.toLowerCase())) return prev;
+      return [...prev, trimmed];
+    });
+    setCustomInjuryInput('');
+  };
+
+  const removeCustomInjury = (item: string) => {
+    setInjuries((prev) => prev.filter((x) => x !== item));
   };
 
   const isPro = user?.subscriptionStatus === 'pro';
@@ -790,15 +806,17 @@ export default function Profile() {
             {/* Joint Exclusions */}
             <div>
               <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
-                Joint Exclusions & Injuries
+                Joint Exclusions & Limitations
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-3">
                 {[
                   { id: 'lower_back', label: 'Lower Back' },
                   { id: 'shoulders', label: 'Shoulders' },
                   { id: 'knees', label: 'Knees' },
                   { id: 'wrists', label: 'Wrists' },
-                  { id: 'neck', label: 'Neck' }
+                  { id: 'neck', label: 'Neck' },
+                  { id: 'elbows', label: 'Elbows' },
+                  { id: 'hips', label: 'Hips' }
                 ].map((inj) => {
                   const isSelected = injuries.includes(inj.id);
                   return (
@@ -816,6 +834,59 @@ export default function Profile() {
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Custom Limitation Input */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold uppercase text-textMuted tracking-wider">
+                  Add Custom Injury / Limitation
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customInjuryInput}
+                    onChange={(e) => setCustomInjuryInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomInjury();
+                      }
+                    }}
+                    placeholder="e.g. Achilles tendonitis, Hernia, Tennis elbow..."
+                    className="flex-1 bg-surfaceElevated border border-surfaceElevated rounded-xl px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomInjury}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-surfaceElevated hover:bg-primary hover:text-black text-xs font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
+                  >
+                    <Plus size={14} />
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                {/* Custom Tags */}
+                {injuries.filter((inj) => !['lower_back', 'shoulders', 'knees', 'wrists', 'neck', 'elbows', 'hips'].includes(inj)).length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {injuries
+                      .filter((inj) => !['lower_back', 'shoulders', 'knees', 'wrists', 'neck', 'elbows', 'hips'].includes(inj))
+                      .map((custom) => (
+                        <span
+                          key={custom}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30"
+                        >
+                          <span>⚡ {custom}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeCustomInjury(custom)}
+                            className="hover:text-red-400 focus:outline-none"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
 

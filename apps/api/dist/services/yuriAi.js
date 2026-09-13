@@ -60,14 +60,31 @@ const substituteExercise = async (workoutId, currentExerciseNameOrId, reason, us
             { muscleGroups: { $in: [muscleGroup] } }
         ]
     });
-    // Filter candidates avoiding injuries
+    // Filter candidates avoiding injuries (both presets and custom tags)
     const filtered = candidates.filter(c => {
-        if (userInjuries.includes('shoulder') && c.substitutionTags.includes('vertical_press'))
-            return false;
-        if (userInjuries.includes('knee') && c.substitutionTags.includes('knee_flexion'))
-            return false;
-        if (userInjuries.includes('lower_back') && c.name.toLowerCase().includes('deadlift'))
-            return false;
+        const cName = c.name.toLowerCase();
+        for (const inj of userInjuries) {
+            const injStr = inj.toLowerCase().trim();
+            if (!injStr || injStr === 'none')
+                continue;
+            if ((injStr.includes('shoulder') || injStr.includes('rotator')) && (c.substitutionTags.includes('vertical_press') || cName.includes('overhead')))
+                return false;
+            if ((injStr.includes('knee') || injStr.includes('patellar')) && (c.substitutionTags.includes('knee_flexion') || cName.includes('lunge') || cName.includes('jump')))
+                return false;
+            if ((injStr.includes('lower_back') || injStr.includes('back') || injStr.includes('spine')) && (cName.includes('deadlift') || c.substitutionTags.includes('barbell_back')))
+                return false;
+            if (injStr.includes('wrist') && (cName.includes('pushup') || cName.includes('clean')))
+                return false;
+            if (injStr.includes('elbow') && (cName.includes('skull crusher') || cName.includes('dip')))
+                return false;
+            if (injStr.includes('neck') && (cName.includes('behind') || cName.includes('shrug')))
+                return false;
+            const words = injStr.split(/\s+/).filter(w => w.length > 3 && !['pain', 'hurt', 'injury', 'left', 'right'].includes(w));
+            for (const word of words) {
+                if (cName.includes(word) || c.muscleGroups.some(m => m.toLowerCase().includes(word)))
+                    return false;
+            }
+        }
         return true;
     });
     const replacement = filtered[Math.floor(Math.random() * filtered.length)] || candidates[0];

@@ -52,20 +52,67 @@ export const generateWorkoutRoutine = async (options: GeneratorOptions): Promise
 
     if (!hasEquipment) return false;
 
-    // Check injury exclusions
-    if (userInjuries.includes('knee') || userInjuries.includes('knees')) {
-      if (ex.substitutionTags.includes('knee_flexion') || ex.name.toLowerCase().includes('lunge')) {
-        return false;
+    // Check injury exclusions (both standard presets and custom free-form limitations)
+    for (const inj of userInjuries) {
+      const injStr = inj.toLowerCase().trim();
+      if (!injStr || injStr === 'none') continue;
+
+      // 1. Knee / Patellar
+      if (injStr.includes('knee') || injStr.includes('patellar')) {
+        if (ex.substitutionTags.includes('knee_flexion') || ex.name.toLowerCase().includes('lunge') || ex.name.toLowerCase().includes('jump')) {
+          return false;
+        }
       }
-    }
-    if (userInjuries.includes('lower_back') || userInjuries.includes('back')) {
-      if (ex.name.toLowerCase().includes('deadlift') || ex.substitutionTags.includes('barbell_back')) {
-        return false;
+      // 2. Lower Back / Spine / Disc
+      if (injStr.includes('lower_back') || injStr.includes('back') || injStr.includes('disc') || injStr.includes('spine')) {
+        if (ex.name.toLowerCase().includes('deadlift') || ex.substitutionTags.includes('barbell_back') || ex.name.toLowerCase().includes('good morning')) {
+          return false;
+        }
       }
-    }
-    if (userInjuries.includes('shoulder') || userInjuries.includes('shoulders')) {
-      if (ex.substitutionTags.includes('vertical_press') || ex.name.toLowerCase().includes('overhead')) {
-        return false;
+      // 3. Shoulders / Rotator Cuff
+      if (injStr.includes('shoulder') || injStr.includes('rotator')) {
+        if (ex.substitutionTags.includes('vertical_press') || ex.name.toLowerCase().includes('overhead') || ex.name.toLowerCase().includes('upright row')) {
+          return false;
+        }
+      }
+      // 4. Wrists / Carpal Tunnel
+      if (injStr.includes('wrist') || injStr.includes('carpal')) {
+        if (ex.name.toLowerCase().includes('pushup') || ex.name.toLowerCase().includes('clean') || ex.name.toLowerCase().includes('wrist curl')) {
+          return false;
+        }
+      }
+      // 5. Neck
+      if (injStr.includes('neck')) {
+        if (ex.name.toLowerCase().includes('behind') || ex.name.toLowerCase().includes('shrug')) {
+          return false;
+        }
+      }
+      // 6. Elbow / Forearm / Tendonitis
+      if (injStr.includes('elbow') || injStr.includes('forearm') || injStr.includes('tendonitis')) {
+        if (ex.name.toLowerCase().includes('skull crusher') || ex.name.toLowerCase().includes('french press') || ex.name.toLowerCase().includes('dip')) {
+          return false;
+        }
+      }
+      // 7. Hip
+      if (injStr.includes('hip')) {
+        if (ex.name.toLowerCase().includes('sumo') || ex.name.toLowerCase().includes('hip thrust') || ex.name.toLowerCase().includes('wide squat')) {
+          return false;
+        }
+      }
+      // 8. Ankle / Achilles
+      if (injStr.includes('ankle') || injStr.includes('achilles')) {
+        if (ex.name.toLowerCase().includes('calf jump') || ex.name.toLowerCase().includes('plyo') || ex.name.toLowerCase().includes('box jump')) {
+          return false;
+        }
+      }
+      // 9. Generic custom keyword matching against exercise name or muscle groups
+      const exNameLower = ex.name.toLowerCase();
+      const exMusclesLower = (ex.muscleGroups || []).map(m => m.toLowerCase());
+      const words = injStr.split(/\s+/).filter(w => w.length > 3 && !['pain', 'hurt', 'injury', 'left', 'right', 'strain', 'sprain'].includes(w));
+      for (const word of words) {
+        if (exNameLower.includes(word) || exMusclesLower.includes(word)) {
+          return false;
+        }
       }
     }
 

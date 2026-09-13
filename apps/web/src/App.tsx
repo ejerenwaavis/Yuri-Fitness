@@ -43,12 +43,11 @@ function Layout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Onboarding wizard: scrollable intake form
+  // Onboarding wizard: strictly fixed full viewport, zero scroll, app-centric
   if (location.pathname === '/onboarding') {
     return (
-      <div className="min-h-screen bg-background text-textPrimary">
+      <div className="fixed inset-0 w-full h-[100dvh] max-h-[100dvh] overflow-hidden bg-background text-textPrimary">
         {children}
-        <InstallPrompt />
       </div>
     );
   }
@@ -96,27 +95,35 @@ function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-y-auto pb-20 lg:pb-0 overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+      <main className="flex-1 relative overflow-y-auto pb-28 lg:pb-0 overscroll-y-contain [-webkit-overflow-scrolling:touch]">
         <div className="max-w-5xl mx-auto w-full min-h-full">{children}</div>
         <InstallPrompt />
       </main>
 
-      {/* Bottom Tab Bar for Mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-surfaceElevated px-2 py-2 pb-safe flex justify-around items-center z-40">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `flex flex-col items-center p-1.5 transition-colors ` +
-              (isActive ? 'text-primary' : 'text-textMuted hover:text-textPrimary')
-            }
-          >
-            <item.icon size={22} />
-            <span className="text-[10px] font-medium mt-1">{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
+      {/* Floating Pill Bottom Tab Bar for Mobile (Nike-style capsule dock) */}
+      <div className="lg:hidden fixed bottom-4 inset-x-0 mx-auto max-w-sm w-[calc(100%-2rem)] z-40 pointer-events-auto">
+        <nav className="bg-surface/90 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_12px_36px_rgba(0,0,0,0.7)] px-2.5 py-1.5 flex justify-around items-center">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex flex-col items-center justify-center py-1 px-2.5 rounded-full transition-all duration-200 ` +
+                (isActive
+                  ? 'text-primary font-bold drop-shadow-[0_0_8px_rgba(124,255,61,0.6)]'
+                  : 'text-textMuted hover:text-textPrimary')
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon size={20} className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
+                  <span className="text-[10px] font-medium mt-0.5 tracking-tight">{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }
