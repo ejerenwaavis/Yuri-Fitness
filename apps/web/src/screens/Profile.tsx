@@ -64,6 +64,7 @@ export default function Profile() {
   const [customInjuryInput, setCustomInjuryInput] = useState('');
   const [fitnessUpdating, setFitnessUpdating] = useState(false);
   const [fitnessFeedback, setFitnessFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const [fitnessSaved, setFitnessSaved] = useState(false);
 
   const isSpanish = i18n.language?.startsWith('es');
 
@@ -196,10 +197,7 @@ export default function Profile() {
       }
 
       setFitnessFeedback({ type: 'success', msg: 'Training profile and active routine synced!' });
-      setTimeout(() => {
-        setFitnessFeedback(null);
-        setIsFitnessOpen(false);
-      }, 1200);
+      setFitnessSaved(true);
     } catch (err: any) {
       setFitnessFeedback({ type: 'error', msg: err.message || 'Failed to save profile' });
     } finally {
@@ -372,7 +370,11 @@ export default function Profile() {
 
         {/* Category Row 3: Fitness & Training Profile */}
         <div
-          onClick={() => setIsFitnessOpen(true)}
+          onClick={() => {
+            setFitnessSaved(false);
+            setFitnessFeedback(null);
+            setIsFitnessOpen(true);
+          }}
           role="button"
           tabIndex={0}
           className="w-full bg-surface p-4 rounded-2xl border border-surfaceElevated hover:border-textMuted/40 flex items-center justify-between cursor-pointer transition-all group"
@@ -704,253 +706,303 @@ export default function Profile() {
                 </h3>
               </div>
               <button
-                onClick={() => setIsFitnessOpen(false)}
+                onClick={() => {
+                  setIsFitnessOpen(false);
+                  setFitnessSaved(false);
+                }}
                 className="p-1.5 rounded-full text-textMuted hover:text-textPrimary bg-surfaceElevated"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Target Goal */}
-            <div>
-              <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
-                Primary Goal
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'hypertrophy', label: 'Hypertrophy / Muscle' },
-                  { id: 'strength', label: 'Raw Strength' },
-                  { id: 'fat_loss', label: 'Fat Loss & Tone' },
-                  { id: 'endurance', label: 'Endurance' }
-                ].map((g) => (
+            {fitnessSaved ? (
+              <div className="py-4 space-y-6 animate-in zoom-in-95 duration-200">
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-primary shadow-[0_0_20px_rgba(124,255,61,0.3)]">
+                    <CheckCircle2 size={36} />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-black text-textPrimary tracking-tight">
+                      Profile & Routine Saved!
+                    </h4>
+                    <p className="text-xs text-textMuted mt-1 max-w-sm">
+                      Your training target, equipment availability, and limitations have been saved. Your active workout routine has been updated.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Prompt Card */}
+                <div className="bg-surfaceElevated/70 border border-surfaceElevated rounded-2xl p-4 text-left space-y-2">
+                  <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                    <Sparkles size={15} />
+                    <span>Intake Flow Option</span>
+                  </div>
+                  <p className="text-xs text-textSecondary leading-relaxed">
+                    Would you also like to step through the guided 4-step intake questionnaire to fine-tune your personalized Yuri experience?
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-2.5 pt-2">
                   <button
-                    key={g.id}
                     type="button"
-                    onClick={() => setGoal(g.id)}
-                    className={`p-2.5 rounded-xl text-xs font-bold border transition-all ${
-                      goal === g.id
-                        ? 'bg-primary/20 text-primary border-primary shadow-sm'
-                        : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
+                    onClick={() => {
+                      setIsFitnessOpen(false);
+                      setFitnessSaved(false);
+                      navigate('/onboarding');
+                    }}
+                    className="w-full py-3 px-4 rounded-xl bg-primary text-black font-black text-xs hover:opacity-95 flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(124,255,61,0.25)]"
+                  >
+                    <Sliders size={16} />
+                    <span>Redo Guided Intake Flow</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFitnessOpen(false);
+                      setFitnessSaved(false);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl bg-surfaceElevated hover:bg-surfaceElevated/80 text-textMuted hover:text-textPrimary text-xs font-bold transition-all border border-surfaceElevated"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Target Goal */}
+                <div>
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
+                    Primary Goal
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'hypertrophy', label: 'Hypertrophy / Muscle' },
+                      { id: 'strength', label: 'Raw Strength' },
+                      { id: 'fat_loss', label: 'Fat Loss & Tone' },
+                      { id: 'endurance', label: 'Endurance' }
+                    ].map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setGoal(g.id)}
+                        className={`p-2.5 rounded-xl text-xs font-bold border transition-all ${
+                          goal === g.id
+                            ? 'bg-primary/20 text-primary border-primary shadow-sm'
+                            : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
+                        }`}
+                      >
+                        {g.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Commitment & Duration */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase">
+                      Days / Week
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      {[2, 3, 4, 5, 6].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setDaysAvailable(d)}
+                          className={`w-9 h-9 rounded-xl text-xs font-black border transition-all ${
+                            daysAvailable === d
+                              ? 'bg-primary text-black border-primary'
+                              : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
+                          }`}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase">
+                      Duration (min)
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      {[20, 30, 45, 60].map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setSessionLength(m)}
+                          className={`px-2.5 h-9 rounded-xl text-xs font-black border transition-all ${
+                            sessionLength === m
+                              ? 'bg-primary text-black border-primary'
+                              : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
+                          }`}
+                        >
+                          {m}m
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Equipment Inventory */}
+                <div>
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
+                    Available Equipment
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: 'barbell', label: 'Barbell' },
+                      { id: 'dumbbell', label: 'Dumbbells' },
+                      { id: 'cables', label: 'Cable Machine' },
+                      { id: 'machines', label: 'Gym Machines' },
+                      { id: 'bodyweight', label: 'Bodyweight Only' },
+                      { id: 'bands', label: 'Resistance Bands' },
+                      { id: 'bench', label: 'Adjustable Bench' }
+                    ].map((item) => {
+                      const isSelected = equipment.includes(item.id);
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => toggleEquipment(item.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                            isSelected
+                              ? 'bg-primary/20 text-primary border-primary shadow-sm'
+                              : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Joint Exclusions */}
+                <div>
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
+                    Joint Exclusions & Limitations
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {[
+                      { id: 'lower_back', label: 'Lower Back' },
+                      { id: 'shoulders', label: 'Shoulders' },
+                      { id: 'knees', label: 'Knees' },
+                      { id: 'wrists', label: 'Wrists' },
+                      { id: 'neck', label: 'Neck' },
+                      { id: 'elbows', label: 'Elbows' },
+                      { id: 'hips', label: 'Hips' }
+                    ].map((inj) => {
+                      const isSelected = injuries.includes(inj.id);
+                      return (
+                        <button
+                          key={inj.id}
+                          type="button"
+                          onClick={() => toggleInjury(inj.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                            isSelected
+                              ? 'bg-red-500/20 text-red-400 border-red-500 shadow-sm'
+                              : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
+                          }`}
+                        >
+                          {inj.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom Limitation Input */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold uppercase text-textMuted tracking-wider">
+                      Add Custom Injury / Limitation
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customInjuryInput}
+                        onChange={(e) => setCustomInjuryInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCustomInjury();
+                          }
+                        }}
+                        placeholder="e.g. Achilles tendonitis, Hernia, Tennis elbow..."
+                        className="flex-1 bg-surfaceElevated border border-surfaceElevated rounded-xl px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomInjury}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-surfaceElevated hover:bg-primary hover:text-black text-xs font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
+                      >
+                        <Plus size={14} />
+                        <span>Add</span>
+                      </button>
+                    </div>
+
+                    {/* Custom Tags */}
+                    {injuries.filter((inj) => !['lower_back', 'shoulders', 'knees', 'wrists', 'neck', 'elbows', 'hips'].includes(inj)).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {injuries
+                          .filter((inj) => !['lower_back', 'shoulders', 'knees', 'wrists', 'neck', 'elbows', 'hips'].includes(inj))
+                          .map((custom) => (
+                            <span
+                              key={custom}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30"
+                            >
+                              <span>⚡ {custom}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeCustomInjury(custom)}
+                                className="hover:text-red-400 focus:outline-none"
+                              >
+                                <X size={12} />
+                              </button>
+                            </span>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {fitnessFeedback && (
+                  <div
+                    className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                      fitnessFeedback.type === 'success'
+                        ? 'bg-primary/15 text-primary border border-primary/30'
+                        : 'bg-red-500/15 text-red-400 border border-red-500/30'
                     }`}
                   >
-                    {g.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Commitment & Duration */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase">
-                  Days / Week
-                </label>
-                <div className="flex items-center gap-1.5">
-                  {[2, 3, 4, 5, 6].map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setDaysAvailable(d)}
-                      className={`w-9 h-9 rounded-xl text-xs font-black border transition-all ${
-                        daysAvailable === d
-                          ? 'bg-primary text-black border-primary'
-                          : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
-                      }`}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase">
-                  Duration (min)
-                </label>
-                <div className="flex items-center gap-1.5">
-                  {[20, 30, 45, 60].map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setSessionLength(m)}
-                      className={`px-2.5 h-9 rounded-xl text-xs font-black border transition-all ${
-                        sessionLength === m
-                          ? 'bg-primary text-black border-primary'
-                          : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
-                      }`}
-                    >
-                      {m}m
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Equipment Inventory */}
-            <div>
-              <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
-                Available Equipment
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { id: 'barbell', label: 'Barbell' },
-                  { id: 'dumbbell', label: 'Dumbbells' },
-                  { id: 'cables', label: 'Cable Machine' },
-                  { id: 'machines', label: 'Gym Machines' },
-                  { id: 'bodyweight', label: 'Bodyweight Only' },
-                  { id: 'bands', label: 'Resistance Bands' },
-                  { id: 'bench', label: 'Adjustable Bench' }
-                ].map((item) => {
-                  const isSelected = equipment.includes(item.id);
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => toggleEquipment(item.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                        isSelected
-                          ? 'bg-primary/20 text-primary border-primary shadow-sm'
-                          : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Joint Exclusions */}
-            <div>
-              <label className="block text-xs font-bold text-textMuted mb-2 uppercase">
-                Joint Exclusions & Limitations
-              </label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {[
-                  { id: 'lower_back', label: 'Lower Back' },
-                  { id: 'shoulders', label: 'Shoulders' },
-                  { id: 'knees', label: 'Knees' },
-                  { id: 'wrists', label: 'Wrists' },
-                  { id: 'neck', label: 'Neck' },
-                  { id: 'elbows', label: 'Elbows' },
-                  { id: 'hips', label: 'Hips' }
-                ].map((inj) => {
-                  const isSelected = injuries.includes(inj.id);
-                  return (
-                    <button
-                      key={inj.id}
-                      type="button"
-                      onClick={() => toggleInjury(inj.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                        isSelected
-                          ? 'bg-red-500/20 text-red-400 border-red-500 shadow-sm'
-                          : 'bg-surfaceElevated border-surfaceElevated text-textMuted hover:text-textPrimary'
-                      }`}
-                    >
-                      {inj.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Custom Limitation Input */}
-              <div className="space-y-1.5">
-                <label className="block text-[10px] font-bold uppercase text-textMuted tracking-wider">
-                  Add Custom Injury / Limitation
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customInjuryInput}
-                    onChange={(e) => setCustomInjuryInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddCustomInjury();
-                      }
-                    }}
-                    placeholder="e.g. Achilles tendonitis, Hernia, Tennis elbow..."
-                    className="flex-1 bg-surfaceElevated border border-surfaceElevated rounded-xl px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary placeholder:text-textMuted/50"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomInjury}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-surfaceElevated hover:bg-primary hover:text-black text-xs font-bold rounded-xl transition-colors border border-surfaceElevated shrink-0"
-                  >
-                    <Plus size={14} />
-                    <span>Add</span>
-                  </button>
-                </div>
-
-                {/* Custom Tags */}
-                {injuries.filter((inj) => !['lower_back', 'shoulders', 'knees', 'wrists', 'neck', 'elbows', 'hips'].includes(inj)).length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {injuries
-                      .filter((inj) => !['lower_back', 'shoulders', 'knees', 'wrists', 'neck', 'elbows', 'hips'].includes(inj))
-                      .map((custom) => (
-                        <span
-                          key={custom}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30"
-                        >
-                          <span>⚡ {custom}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeCustomInjury(custom)}
-                            className="hover:text-red-400 focus:outline-none"
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
+                    {fitnessFeedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                    <span>{fitnessFeedback.msg}</span>
                   </div>
                 )}
-              </div>
-            </div>
 
-            {fitnessFeedback && (
-              <div
-                className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
-                  fitnessFeedback.type === 'success'
-                    ? 'bg-primary/15 text-primary border border-primary/30'
-                    : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                }`}
-              >
-                {fitnessFeedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-                <span>{fitnessFeedback.msg}</span>
-              </div>
+                <div className="pt-3 border-t border-surfaceElevated flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFitnessOpen(false);
+                      setFitnessSaved(false);
+                    }}
+                    className="px-4 py-2 text-xs font-bold text-textMuted hover:text-textPrimary bg-surfaceElevated rounded-xl"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={fitnessUpdating}
+                    onClick={handleSaveFitness}
+                    className="bg-primary text-black font-black px-6 py-2 rounded-xl text-xs hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
+                  >
+                    {fitnessUpdating ? 'Syncing...' : 'Save Profile & Update Routine'}
+                  </button>
+                </div>
+              </>
             )}
-
-            <div className="pt-3 border-t border-surfaceElevated space-y-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsFitnessOpen(false);
-                  navigate('/onboarding');
-                }}
-                className="w-full py-2.5 px-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary hover:bg-primary/20 flex items-center justify-center gap-2 transition-all"
-              >
-                <Sliders size={14} />
-                <span>Redo Guided Intake Flow</span>
-              </button>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsFitnessOpen(false)}
-                  className="px-4 py-2 text-xs font-bold text-textMuted hover:text-textPrimary bg-surfaceElevated rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={fitnessUpdating}
-                  onClick={handleSaveFitness}
-                  className="bg-primary text-black font-black px-6 py-2 rounded-xl text-xs hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
-                >
-                  {fitnessUpdating ? 'Syncing...' : 'Save Profile & Update Routine'}
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}
