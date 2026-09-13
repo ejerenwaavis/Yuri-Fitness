@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ import {
   RotateCcw,
   CheckCircle2,
   ChevronLeft,
-  ChevronRight,
+  ChevronDown,
   Sparkles,
   Timer,
   Award,
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { WorkoutSession, SessionExercise, LoggedSet } from '@yuri/shared';
 import YuriAiDrawer from '../components/YuriAiDrawer';
+import { useUnit } from '../context/UnitContext';
 
 const RPE_OPTIONS = [
   { emoji: '😫', label: 'Brutal / Failed', value: 'brutal' },
@@ -34,6 +35,7 @@ export default function WorkoutRunner() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const token = localStorage.getItem('yuri_token');
+  const { unit, formatWeight, toDisplayWeight, fromDisplayWeight, weightPickerOptions } = useUnit();
 
   // Exercise navigation index
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -41,18 +43,23 @@ export default function WorkoutRunner() {
   // Local copy of session for live editing
   const [session, setSession] = useState<WorkoutSession | null>(null);
 
+  // Active set index within current exercise (0 to targetSets - 1)
+  const [currentSetIdx, setCurrentSetIdx] = useState(0);
+
   // Yuri AI Drawer state
   const [isAiOpen, setIsAiOpen] = useState(false);
 
   // Rest Timer State
-  const [restSeconds, setRestSeconds] = useState(90);
+  const [restSeconds, setRestSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
-  const [timerInitial, setTimerInitial] = useState(90);
 
   // Finish modal state
   const [finishModalOpen, setFinishModalOpen] = useState(false);
   const [selectedRpe, setSelectedRpe] = useState<string>('💪');
   const [workoutFinished, setWorkoutFinished] = useState(false);
+
+  // Horizontal scroll container ref for thumbnail queue
+  const queueScrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch workout session
   const { data: fetchedSession, isLoading, error } = useQuery<WorkoutSession>({
@@ -72,7 +79,6 @@ export default function WorkoutRunner() {
   // Keep local session state in sync
   useEffect(() => {
     if (fetchedSession && !session) {
-      // Initialize loggedSets if empty
       const initialized = { ...fetchedSession };
       if (Array.isArray(initialized.exercises)) {
         initialized.exercises = initialized.exercises.map((ex) => {
@@ -111,48 +117,91 @@ export default function WorkoutRunner() {
     return () => clearInterval(interval);
   }, [timerRunning, restSeconds]);
 
-  const startTimer = (seconds: number) => {
-    setTimerInitial(seconds);
-    setRestSeconds(seconds);
+  // Auto-scroll thumbnail strip when active exercise changes
+  useEffect(() => {
+    if (queueScrollRef.current) {
+      const activeEl = queueScrollRef.current.children[currentIdx] as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest'
+        });
+      }
+    }
+    setCurrentSetIdx(0);
+  }, [currentIdx]);
+
+  const startRestTimer = (secs = 60) => {
+    setRestSeconds(secs);
     setTimerRunning(true);
   };
 
-  const toggleTimer = () => {
-    setTimerRunning((r) => !r);
-  };
-
-  const resetTimer = () => {
-    setTimerRunning(false);
-    setRestSeconds(timerInitial);
-  };
-
-  // Update a specific set's logged data (reps, weight, completed)
-  const handleUpdateSet = (setIndex: number, field: keyof LoggedSet, value: any) => {
-    if (!session || !session.exercises) return;
-
-    const updated = { ...session };
-    const ex = updated.exercises[currentIdx];
-    if (!ex || !ex.loggedSets) return;
-
-    const currentSet = { ...ex.loggedSets[setIndex], [field]: value };
-    ex.loggedSets[setIndex] = currentSet;
-
-    // If marked completed, automatically trigger rest timer
-    if (field === 'completed' && value === true) {
-      startTimer(90);
-    }
-
-    setSession(updated);
-
-    // Save progress to server asynchronously
+  // Sync exercises state to server asynchronously
+  const saveSessionState = (updatedSession: WorkoutSession) => {
+    setSession(updatedSession);
+    if (!id) return;
     fetch(`/api/workouts/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({ exercises: updated.exercises })
-    }).catch((err) => console.error('Auto-save set error:', err));
+      body: JSON.stringify({ exercises: updatedSession.exercises })
+    }).catch((err) => console.error('Auto-save error:', err));
+  };
+
+  // Handle Weight Picker change (single tap selection, no typing)
+  const handleWeightPickerChange = (displayVal: number) => {
+    if (!session || !session.exercises) return;
+    const updated = { ...session };
+    const ex = updated.exercises[currentIdx];
+    if (!ex || !ex.loggedSets) return;
+
+    // Convert display value back to normalized kg for DB
+    const normalizedKg = fromDisplayWeight(displayVal);
+
+    // Update target and all logged sets for this exercise
+    ex.targetWeight = normalizedKg;
+    ex.loggedSets = ex.loggedSets.map((s) => ({
+      ...s,
+      weight: normalizedKg
+    }));
+
+    saveSessionState(updated);
+  };
+
+  // Mark current set or exercise done
+  const handleCompleteSetOrExercise = () => {
+    if (!session || !session.exercises) return;
+    const updated = { ...session };
+    const ex = updated.exercises[currentIdx];
+    if (!ex || !ex.loggedSets) return;
+
+    // Mark current set completed
+    if (ex.loggedSets[currentSetIdx]) {
+      ex.loggedSets[currentSetIdx].completed = true;
+    }
+
+    // Start rest timer
+    startRestTimer(60);
+
+    // If more sets remain in this exercise, advance set index
+    if (currentSetIdx < ex.loggedSets.length - 1) {
+      setCurrentSetIdx((prev) => prev + 1);
+      saveSessionState(updated);
+    } else {
+      // All sets done for this exercise! Move to next exercise if available
+      saveSessionState(updated);
+      if (currentIdx < session.exercises.length - 1) {
+        setTimeout(() => {
+          setCurrentIdx((prev) => prev + 1);
+        }, 300);
+      } else {
+        // Last exercise completed! Open finish modal
+        setFinishModalOpen(true);
+      }
+    }
   };
 
   // Complete workout mutation
@@ -181,7 +230,7 @@ export default function WorkoutRunner() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-textPrimary">
+      <div className="h-[100dvh] flex items-center justify-center bg-background text-textPrimary">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -189,7 +238,7 @@ export default function WorkoutRunner() {
 
   if (error || !session || !session.exercises || session.exercises.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background text-textPrimary space-y-4">
+      <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center bg-background text-textPrimary space-y-4">
         <Dumbbell size={48} className="text-textMuted opacity-40" />
         <h3 className="text-xl font-black">Workout session not found</h3>
         <button
@@ -205,78 +254,68 @@ export default function WorkoutRunner() {
   const currentExercise = session.exercises[currentIdx];
   const totalExercises = session.exercises.length;
 
-  // Format timer seconds into MM:SS
-  const timerMinutes = Math.floor(restSeconds / 60);
-  const timerSecs = restSeconds % 60;
-  const formattedTime = `${timerMinutes}:${timerSecs < 10 ? '0' : ''}${timerSecs}`;
+  // Active exercise weight in current display unit
+  const activeWeightKg =
+    currentExercise.loggedSets?.[currentSetIdx]?.weight ??
+    currentExercise.targetWeight ??
+    0;
+  const activeDisplayWeight = toDisplayWeight(activeWeightKg);
+
+  const completedSetsCount =
+    currentExercise.loggedSets?.filter((s) => s.completed).length || 0;
+  const totalSetsCount = currentExercise.loggedSets?.length || currentExercise.targetSets || 3;
+  const isAllSetsDone = completedSetsCount === totalSetsCount;
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary flex flex-col justify-between p-4 sm:p-6 max-w-2xl mx-auto pb-28 lg:pb-8">
-      {/* Top Header Bar */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => navigate('/workouts')}
-            className="text-textMuted hover:text-textPrimary text-xs font-semibold flex items-center gap-1 bg-surfaceElevated px-3 py-1.5 rounded-lg"
-          >
-            <ChevronLeft size={16} /> Exit
-          </button>
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-background text-textPrimary flex flex-col justify-between p-3 sm:p-4 select-none">
+      {/* 1. TOP HEADER BAR */}
+      <div className="flex items-center justify-between shrink-0 h-11 border-b border-surfaceElevated/50 pb-2">
+        <button
+          onClick={() => navigate('/workouts')}
+          className="text-textMuted hover:text-textPrimary text-xs font-bold flex items-center gap-1 bg-surfaceElevated/80 px-3 py-1.5 rounded-full transition-colors active:scale-95"
+        >
+          <ChevronLeft size={16} /> Exit
+        </button>
 
-          {/* Yuri AI Live Coach Button */}
-          <button
-            onClick={() => setIsAiOpen(true)}
-            className="flex items-center gap-2 bg-primary/15 text-primary border border-primary/40 hover:bg-primary/25 font-bold px-3 py-1.5 rounded-full text-xs transition-all shadow-[0_0_12px_rgba(124,255,61,0.2)] animate-pulse"
-          >
-            <Sparkles size={14} />
-            <span>Yuri AI Swaps</span>
-          </button>
+        {/* Yuri AI Center Pill */}
+        <button
+          onClick={() => setIsAiOpen(true)}
+          className="flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/30 hover:bg-primary/20 font-black px-3.5 py-1.5 rounded-full text-xs transition-all shadow-[0_0_12px_rgba(124,255,61,0.2)] active:scale-95"
+        >
+          <Sparkles size={14} />
+          <span>Yuri AI</span>
+        </button>
 
-          <button
-            onClick={() => setFinishModalOpen(true)}
-            className="bg-primary text-black font-black text-xs px-3.5 py-1.5 rounded-lg hover:opacity-90 shadow-md"
-          >
-            Finish
-          </button>
-        </div>
-
-        {/* Progress Dots / Bar */}
-        <div className="flex items-center justify-between text-xs text-textMuted">
-          <span className="font-bold">
-            Exercise {currentIdx + 1} of {totalExercises}
-          </span>
-          <span className="text-primary font-bold">{Math.round(((currentIdx + 1) / totalExercises) * 100)}%</span>
-        </div>
-        <div className="h-1.5 w-full bg-surfaceElevated rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary transition-all duration-300 rounded-full"
-            style={{ width: `${((currentIdx + 1) / totalExercises) * 100}%` }}
-          />
-        </div>
+        {/* Finish Button */}
+        <button
+          onClick={() => setFinishModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs px-4 py-1.5 rounded-full shadow-md active:scale-95 transition-all"
+        >
+          Finish
+        </button>
       </div>
 
-      {/* Main Exercise Card */}
-      <div className="my-auto py-4 space-y-5">
-        {/* Exercise Header Card */}
-        <div className="bg-surface border border-surfaceElevated rounded-2xl p-5 shadow-lg space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span className="text-[10px] uppercase font-black tracking-wider text-primary px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
-                {currentExercise.equipment || 'Equipment'}
-              </span>
-              <h2 className="text-2xl font-black text-textPrimary tracking-tight mt-2">
-                {currentExercise.name}
-              </h2>
-              <p className="text-xs text-textMuted mt-0.5">
-                Target: {currentExercise.targetSets || 3} sets × {currentExercise.targetReps || 10} reps
-                {currentExercise.targetWeight ? ` @ ${currentExercise.targetWeight} kg` : ''}
-              </p>
-            </div>
+      {/* 2. MAIN ACTIVE EXERCISE WORKSPACE (NON-SCROLLABLE) */}
+      <div className="flex-1 flex flex-col justify-between py-2 min-h-0">
+        {/* Video / Visual Demonstration Card */}
+        <div className="relative w-full flex-1 min-h-[180px] max-h-[44vh] rounded-2xl bg-surface border border-surfaceElevated overflow-hidden flex flex-col justify-between p-3 shadow-lg">
+          {/* Top Pill with Exercise Name */}
+          <div className="z-10 flex items-center justify-between">
+            <span className="bg-blue-600/30 border border-blue-500/40 text-blue-400 font-black text-xs px-3 py-1 rounded-full shadow-sm">
+              {currentExercise.name}
+            </span>
+
+            {/* Set Progress Badge */}
+            <span className="text-[11px] font-bold text-textMuted bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full">
+              Set {currentSetIdx + 1} of {totalSetsCount}
+            </span>
           </div>
 
-          {/* Form Cues / Media embed preview */}
-          {currentExercise.mediaUrl ? (
-            <div className="rounded-xl overflow-hidden bg-black/40 border border-surfaceElevated max-h-56 flex items-center justify-center">
+          {/* Video or Center Play Visual */}
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-surface/40 to-surface">
+            {currentExercise.mediaUrl ? (
               <video
+                key={currentExercise.mediaUrl}
                 src={currentExercise.mediaUrl}
                 autoPlay
                 loop
@@ -284,147 +323,153 @@ export default function WorkoutRunner() {
                 playsInline
                 className="w-full h-full object-cover"
               />
-            </div>
-          ) : (
-            <div className="p-4 bg-surfaceElevated/50 border border-surfaceElevated rounded-xl flex items-center gap-3">
-              <Film size={24} className="text-primary shrink-0 opacity-70" />
-              <div className="text-xs text-textMuted">
-                <span className="font-bold text-textPrimary block mb-0.5">Form Execution Note</span>
-                Focus on smooth eccentric control and strict joint alignment through full range of motion.
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-surfaceElevated border border-surfaceElevated flex items-center justify-center text-textMuted shadow-md">
+                <Play size={28} className="translate-x-0.5 text-textPrimary opacity-80" />
               </div>
+            )}
+          </div>
+
+          {/* Rest Timer Overlay Banner if counting down */}
+          {timerRunning && (
+            <div className="z-10 bg-black/85 backdrop-blur-md border border-primary/40 rounded-xl p-2 flex items-center justify-between text-xs animate-in fade-in duration-200">
+              <div className="flex items-center gap-2">
+                <Timer size={16} className="text-primary animate-pulse" />
+                <span className="font-black text-textPrimary">
+                  Rest: {Math.floor(restSeconds / 60)}:
+                  {restSeconds % 60 < 10 ? '0' : ''}
+                  {restSeconds % 60}
+                </span>
+              </div>
+              <button
+                onClick={() => setRestSeconds(0)}
+                className="text-[10px] font-bold text-primary hover:underline px-2 py-0.5"
+              >
+                Skip Rest
+              </button>
             </div>
           )}
         </div>
 
-        {/* Set Logging Table */}
-        <div className="bg-surface border border-surfaceElevated rounded-2xl p-5 shadow-lg space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold uppercase text-textMuted tracking-wider px-2">
-            <span>Set</span>
-            <span>Target</span>
-            <span>Reps</span>
-            <span>Weight (kg/lbs)</span>
-            <span>Done</span>
-          </div>
-
-          <div className="space-y-2">
-            {currentExercise.loggedSets?.map((set, idx) => {
-              const isCompleted = set.completed;
-
-              return (
+        {/* Set Targets & Single-Tap Weight Picker Row */}
+        <div className="flex items-center justify-between bg-surface border border-surfaceElevated rounded-2xl p-3 my-2">
+          {/* Target Sets & Reps */}
+          <div className="flex flex-col">
+            <span className="text-base font-black text-textPrimary tracking-tight">
+              {totalSetsCount} sets × {currentExercise.targetReps || 10} reps
+            </span>
+            {/* Set completion indicator dots */}
+            <div className="flex items-center gap-1.5 mt-1">
+              {Array.from({ length: totalSetsCount }).map((_, i) => (
                 <div
-                  key={idx}
-                  className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all ${
-                    isCompleted
-                      ? 'bg-primary/10 border-primary/40'
-                      : 'bg-surfaceElevated/60 border-surfaceElevated'
+                  key={i}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    currentExercise.loggedSets?.[i]?.completed
+                      ? 'bg-primary shadow-[0_0_6px_rgba(124,255,61,0.6)]'
+                      : i === currentSetIdx
+                      ? 'bg-blue-500 scale-110'
+                      : 'bg-surfaceElevated border border-surfaceElevated'
                   }`}
-                >
-                  <div className="w-8 text-center font-bold text-sm text-textPrimary">{idx + 1}</div>
-                  <div className="text-xs text-textMuted w-16 text-center">
-                    {currentExercise.targetReps} reps
-                  </div>
-
-                  {/* Logged Reps Input */}
-                  <input
-                    type="number"
-                    value={set.reps || ''}
-                    onChange={(e) => handleUpdateSet(idx, 'reps', Number(e.target.value))}
-                    className="w-16 bg-surface border border-surfaceElevated rounded-lg py-1.5 text-center text-sm font-bold text-textPrimary focus:outline-none focus:border-primary"
-                  />
-
-                  {/* Logged Weight Input */}
-                  <input
-                    type="number"
-                    step="0.5"
-                    value={set.weight || ''}
-                    onChange={(e) => handleUpdateSet(idx, 'weight', Number(e.target.value))}
-                    className="w-20 bg-surface border border-surfaceElevated rounded-lg py-1.5 text-center text-sm font-bold text-textPrimary focus:outline-none focus:border-primary"
-                  />
-
-                  {/* Complete Set Checkbox */}
-                  <button
-                    type="button"
-                    onClick={() => handleUpdateSet(idx, 'completed', !isCompleted)}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                      isCompleted
-                        ? 'bg-primary text-black shadow-[0_0_10px_rgba(124,255,61,0.3)]'
-                        : 'bg-surface border border-surfaceElevated text-textMuted hover:border-textPrimary'
-                    }`}
-                  >
-                    <Check size={18} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Live Rest Timer Widget */}
-        <div className="bg-surfaceElevated/70 border border-surfaceElevated rounded-2xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl ${timerRunning ? 'bg-primary text-black' : 'bg-surface text-primary'}`}>
-              <Timer size={20} />
-            </div>
-            <div>
-              <div className="text-xl font-black tracking-tight text-textPrimary">{formattedTime}</div>
-              <span className="text-[10px] text-textMuted uppercase font-bold tracking-wider">Rest Stopwatch</span>
+                />
+              ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => startTimer(60)}
-              className="px-2.5 py-1 text-xs font-bold rounded-lg bg-surface border border-surfaceElevated text-textMuted hover:text-textPrimary"
+          {/* Single-Tap Weight Picker Dropdown (No Software Keyboard!) */}
+          <div className="relative">
+            <select
+              value={activeDisplayWeight}
+              onChange={(e) => handleWeightPickerChange(Number(e.target.value))}
+              className="appearance-none bg-surfaceElevated hover:bg-surface border border-surfaceElevated focus:border-blue-500 px-4 py-2.5 pr-8 rounded-xl font-black text-sm text-textPrimary cursor-pointer outline-none shadow-sm transition-all"
             >
-              60s
-            </button>
-            <button
-              onClick={() => startTimer(90)}
-              className="px-2.5 py-1 text-xs font-bold rounded-lg bg-surface border border-surfaceElevated text-textMuted hover:text-textPrimary"
-            >
-              90s
-            </button>
-            <button
-              onClick={toggleTimer}
-              className="p-2 rounded-lg bg-primary text-black font-bold hover:opacity-90 transition-opacity"
-            >
-              {timerRunning ? <Pause size={16} /> : <Play size={16} />}
-            </button>
-            <button
-              onClick={resetTimer}
-              className="p-2 rounded-lg bg-surface border border-surfaceElevated text-textMuted hover:text-textPrimary"
-            >
-              <RotateCcw size={16} />
-            </button>
+              {weightPickerOptions.map((opt) => (
+                <option key={opt} value={opt} className="bg-surface text-textPrimary font-bold">
+                  {opt === 0 ? 'Bodyweight' : `${opt} ${unit}`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-textMuted"
+            />
           </div>
         </div>
+
+        {/* Primary Action Button: "✓ Exercise done" */}
+        <button
+          onClick={handleCompleteSetOrExercise}
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-base active:scale-[0.99] transition-all"
+        >
+          <Check size={20} strokeWidth={3} />
+          <span>
+            {isAllSetsDone
+              ? 'Exercise done'
+              : currentSetIdx < totalSetsCount - 1
+              ? `Done with Set ${currentSetIdx + 1}`
+              : 'Exercise done'}
+          </span>
+        </button>
       </div>
 
-      {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-surfaceElevated">
-        <button
-          disabled={currentIdx === 0}
-          onClick={() => setCurrentIdx((i) => i - 1)}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-surfaceElevated text-textPrimary text-sm font-bold disabled:opacity-30 transition-all"
+      {/* 3. BOTTOM THUMBNAIL STRIP (70% ACTIVE EXPANSION QUEUE) */}
+      <div className="shrink-0 pt-1 border-t border-surfaceElevated/50">
+        <div
+          ref={queueScrollRef}
+          className="flex items-center gap-2.5 overflow-x-auto py-1 scrollbar-none snap-x"
         >
-          <ChevronLeft size={18} /> Prev
-        </button>
+          {session.exercises.map((ex, idx) => {
+            const isActive = idx === currentIdx;
+            const isCompleted =
+              ex.loggedSets &&
+              ex.loggedSets.length > 0 &&
+              ex.loggedSets.every((s) => s.completed);
 
-        {currentIdx < totalExercises - 1 ? (
-          <button
-            onClick={() => setCurrentIdx((i) => i + 1)}
-            className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-primary text-black text-sm font-black shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-all"
-          >
-            Next <ChevronRight size={18} />
-          </button>
-        ) : (
-          <button
-            onClick={() => setFinishModalOpen(true)}
-            className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-primary text-black text-sm font-black shadow-[0_0_20px_rgba(124,255,61,0.4)] hover:opacity-90 transition-all"
-          >
-            <Award size={18} /> Finish Workout
-          </button>
-        )}
+            return (
+              <div
+                key={idx}
+                onClick={() => setCurrentIdx(idx)}
+                className={`h-16 rounded-2xl p-2.5 flex items-center gap-2.5 cursor-pointer select-none transition-all duration-500 ease-out snap-center ${
+                  isActive
+                    ? 'w-[68%] sm:w-[70%] shrink-0 bg-surface border-2 border-primary/60 shadow-[0_0_15px_rgba(124,255,61,0.2)]'
+                    : 'w-[28%] sm:w-[25%] min-w-[95px] shrink-0 bg-surfaceElevated/60 border border-surfaceElevated opacity-70 hover:opacity-100'
+                }`}
+              >
+                {/* Play / Check Icon */}
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                    isCompleted
+                      ? 'bg-primary text-black font-black'
+                      : isActive
+                      ? 'bg-primary/20 text-primary'
+                      : 'bg-surface text-textMuted'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <Check size={18} strokeWidth={3} />
+                  ) : (
+                    <Play size={16} fill={isActive ? 'currentColor' : 'none'} />
+                  )}
+                </div>
+
+                {/* Text Details (Truncated if compact, full if active) */}
+                <div className="overflow-hidden">
+                  <h4
+                    className={`text-xs font-black truncate ${
+                      isActive ? 'text-textPrimary' : 'text-textMuted'
+                    }`}
+                  >
+                    {ex.name}
+                  </h4>
+                  {isActive && (
+                    <span className="text-[10px] font-bold text-primary block leading-none mt-0.5">
+                      {isCompleted ? 'Completed' : 'Current Exercise'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Yuri AI Assistant Drawer */}
@@ -435,7 +480,6 @@ export default function WorkoutRunner() {
         currentExerciseName={currentExercise?.name}
         onWorkoutMutated={(mutated) => {
           setSession(mutated);
-          // Clamp index if exercises were shortened
           if (currentIdx >= (mutated.exercises?.length || 1)) {
             setCurrentIdx(Math.max(0, (mutated.exercises?.length || 1) - 1));
           }
@@ -444,8 +488,8 @@ export default function WorkoutRunner() {
 
       {/* Finish & Emoji RPE Modal */}
       {finishModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-surface border border-surfaceElevated rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface border border-surfaceElevated rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
             {!workoutFinished ? (
               <>
                 <div className="flex items-center justify-between border-b border-surfaceElevated pb-3">
@@ -455,7 +499,7 @@ export default function WorkoutRunner() {
                   </div>
                   <button
                     onClick={() => setFinishModalOpen(false)}
-                    className="p-1.5 rounded-lg text-textMuted hover:text-textPrimary bg-surfaceElevated"
+                    className="p-1.5 rounded-full text-textMuted hover:text-textPrimary bg-surfaceElevated"
                   >
                     <X size={18} />
                   </button>
@@ -472,7 +516,7 @@ export default function WorkoutRunner() {
                         key={opt.value}
                         type="button"
                         onClick={() => setSelectedRpe(opt.emoji)}
-                        className={`flex flex-col items-center p-3 rounded-xl border transition-all ${
+                        className={`flex flex-col items-center p-3 rounded-2xl border transition-all ${
                           selectedRpe === opt.emoji
                             ? 'bg-primary/20 border-primary text-primary shadow-[0_0_12px_rgba(124,255,61,0.3)] scale-105'
                             : 'bg-surfaceElevated border-surfaceElevated hover:border-textMuted'
@@ -488,7 +532,7 @@ export default function WorkoutRunner() {
                 </div>
 
                 {/* Summary Info */}
-                <div className="p-3 bg-surfaceElevated/60 border border-surfaceElevated rounded-xl space-y-1 text-xs text-textMuted">
+                <div className="p-3 bg-surfaceElevated/60 border border-surfaceElevated rounded-2xl space-y-1 text-xs text-textMuted">
                   <div className="flex justify-between">
                     <span>Exercises Completed:</span>
                     <span className="font-bold text-textPrimary">{totalExercises}</span>
@@ -504,10 +548,10 @@ export default function WorkoutRunner() {
                   type="button"
                   disabled={completeMutation.isPending}
                   onClick={() => completeMutation.mutate()}
-                  className="w-full py-3 bg-primary text-black font-black rounded-xl hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(124,255,61,0.3)] flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-lg flex items-center justify-center gap-2"
                 >
                   {completeMutation.isPending ? (
-                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
                       <CheckCircle2 size={18} />
@@ -529,7 +573,7 @@ export default function WorkoutRunner() {
                 </div>
                 <button
                   onClick={() => navigate('/')}
-                  className="w-full py-3 bg-primary text-black font-black rounded-xl hover:opacity-90"
+                  className="w-full py-3.5 bg-primary text-black font-black rounded-2xl hover:opacity-90 shadow-md"
                 >
                   Go to Dashboard
                 </button>

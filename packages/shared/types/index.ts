@@ -10,6 +10,7 @@ export interface UserProfile {
   equipment?: string[];
   injuries?: string[];
   dietPrefs?: string[];
+  weightUnit?: 'kg' | 'lbs';
   onboardingCompleted?: boolean;
 }
 

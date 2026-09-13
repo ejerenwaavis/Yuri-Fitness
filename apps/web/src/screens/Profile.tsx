@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
-import { User as UserIcon, CreditCard, LogOut, Settings, Globe } from 'lucide-react';
+import { User as UserIcon, CreditCard, LogOut, Settings, Globe, Scale } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthContext } from '../App';
+import { useUnit } from '../context/UnitContext';
 
 export default function Profile() {
   const { user, logout } = useContext(AuthContext);
+  const { unit, setUnit } = useUnit();
   const { t, i18n } = useTranslation();
 
   const handleSubscribe = async () => {
@@ -75,34 +77,65 @@ export default function Profile() {
       </div>
 
       {/* Language Selector */}
-      <div className="bg-surface p-4 rounded-lg border border-surfaceElevated">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Globe size={20} className="text-primary" />
-            <span className="font-medium text-textPrimary">{t('profile.language')}</span>
+      <div className="bg-surface p-4 rounded-2xl border border-surfaceElevated flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Globe size={20} className="text-primary" />
+          <span className="font-medium text-textPrimary">{t('profile.language')}</span>
+        </div>
+        <div className="flex items-center p-1 bg-surfaceElevated rounded-full border border-surfaceElevated">
+          <button
+            onClick={() => changeLanguage('es')}
+            className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${
+              isSpanish
+                ? 'bg-primary text-black shadow-sm'
+                : 'text-textMuted hover:text-textPrimary'
+            }`}
+          >
+            🇪🇸 Español
+          </button>
+          <button
+            onClick={() => changeLanguage('en')}
+            className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${
+              !isSpanish
+                ? 'bg-primary text-black shadow-sm'
+                : 'text-textMuted hover:text-textPrimary'
+            }`}
+          >
+            🇬🇧 English
+          </button>
+        </div>
+      </div>
+
+      {/* Unit of Measurement Selector */}
+      <div className="bg-surface p-4 rounded-2xl border border-surfaceElevated flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Scale size={20} className="text-primary" />
+          <div>
+            <span className="font-medium text-textPrimary block">Unit of Measurement</span>
+            <span className="text-[11px] text-textMuted">Site-wide weight display</span>
           </div>
-          <div className="flex items-center gap-1 bg-surfaceElevated p-1 rounded-md border border-surfaceElevated">
-            <button
-              onClick={() => changeLanguage('es')}
-              className={`px-3 py-1 text-sm font-semibold rounded transition-colors ${
-                isSpanish
-                  ? 'bg-primary text-black shadow-sm'
-                  : 'text-textMuted hover:text-textPrimary'
-              }`}
-            >
-              🇪🇸 Español
-            </button>
-            <button
-              onClick={() => changeLanguage('en')}
-              className={`px-3 py-1 text-sm font-semibold rounded transition-colors ${
-                !isSpanish
-                  ? 'bg-primary text-black shadow-sm'
-                  : 'text-textMuted hover:text-textPrimary'
-              }`}
-            >
-              🇬🇧 English
-            </button>
-          </div>
+        </div>
+        <div className="flex items-center p-1 bg-surfaceElevated rounded-full border border-surfaceElevated">
+          <button
+            onClick={() => setUnit('kg')}
+            className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${
+              unit === 'kg'
+                ? 'bg-primary text-black shadow-sm'
+                : 'text-textMuted hover:text-textPrimary'
+            }`}
+          >
+            Metric (kg)
+          </button>
+          <button
+            onClick={() => setUnit('lbs')}
+            className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${
+              unit === 'lbs'
+                ? 'bg-primary text-black shadow-sm'
+                : 'text-textMuted hover:text-textPrimary'
+            }`}
+          >
+            Imperial (lbs)
+          </button>
         </div>
       </div>
 

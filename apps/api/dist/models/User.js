@@ -17,6 +17,7 @@ const ProfileSchema = new mongoose_1.default.Schema({
     equipment: [{ type: String }],
     injuries: [{ type: String }],
     dietPrefs: [{ type: String }],
+    weightUnit: { type: String, enum: ['kg', 'lbs'], default: 'kg' },
     onboardingCompleted: { type: Boolean, default: false }
 }, { _id: false });
 const UserSchema = new mongoose_1.default.Schema({

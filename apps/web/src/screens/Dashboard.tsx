@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import YuriAiDrawer from '../components/YuriAiDrawer';
+import { useUnit } from '../context/UnitContext';
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const { unit, toDisplayWeight } = useUnit();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const token = localStorage.getItem('yuri_token');
@@ -291,7 +293,7 @@ export default function Dashboard() {
         <div className="bg-surface p-4 rounded-xl border border-surfaceElevated shadow-md">
           <span className="text-xs text-textMuted font-medium block">Total Volume</span>
           <span className="text-2xl font-black text-cyan-400 mt-1 block">
-            {((metrics.sets || 10) * (metrics.maxWeight > 0 ? metrics.maxWeight : 50)).toLocaleString()} kg
+            {((metrics.sets || 10) * toDisplayWeight(metrics.maxWeight > 0 ? metrics.maxWeight : 50)).toLocaleString()} {unit}
           </span>
         </div>
         <div className="bg-surface p-4 rounded-xl border border-surfaceElevated shadow-md">

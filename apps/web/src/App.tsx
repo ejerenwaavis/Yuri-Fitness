@@ -11,6 +11,7 @@ import Profile from './screens/Profile';
 import Auth from './screens/Auth';
 import Onboarding from './screens/Onboarding';
 import WorkoutRunner from './screens/WorkoutRunner';
+import { UnitProvider } from './context/UnitContext';
 
 // Simple Auth Context
 interface AuthContextType {
@@ -89,8 +90,8 @@ function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-y-auto pb-20 lg:pb-0">
-        <div className="max-w-5xl mx-auto w-full h-full">{children}</div>
+      <main className="flex-1 relative overflow-y-auto pb-20 lg:pb-0 overscroll-y-contain [-webkit-overflow-scrolling:touch]">
+        <div className="max-w-5xl mx-auto w-full min-h-full">{children}</div>
         <InstallPrompt />
       </main>
 
@@ -152,43 +153,45 @@ export default function App() {
 
   return (
     <AuthContext.Provider value={{ user, login, logout, updateUser }}>
-      {!user ? (
-        <Auth />
-      ) : (
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              {/* Onboarding Wizard route */}
-              <Route
-                path="/onboarding"
-                element={<Onboarding onComplete={(updated) => updateUser(updated)} />}
-              />
+      <UnitProvider>
+        {!user ? (
+          <Auth />
+        ) : (
+          <BrowserRouter>
+            <Layout>
+              <Routes>
+                {/* Onboarding Wizard route */}
+                <Route
+                  path="/onboarding"
+                  element={<Onboarding onComplete={(updated) => updateUser(updated)} />}
+                />
 
-              {/* Active Workout Runner Route */}
-              <Route path="/runner/:id" element={<WorkoutRunner />} />
+                {/* Active Workout Runner Route */}
+                <Route path="/runner/:id" element={<WorkoutRunner />} />
 
-              {/* Standard Tab Routes */}
-              <Route
-                path="/"
-                element={
-                  user.profile?.onboardingCompleted === false ? (
-                    <Navigate to="/onboarding" replace />
-                  ) : (
-                    <Dashboard />
-                  )
-                }
-              />
-              <Route path="/workouts" element={<Workouts />} />
-              <Route path="/exercises" element={<ExerciseLibrary />} />
-              <Route path="/body" element={<Body />} />
-              <Route path="/profile" element={<Profile />} />
+                {/* Standard Tab Routes */}
+                <Route
+                  path="/"
+                  element={
+                    user.profile?.onboardingCompleted === false ? (
+                      <Navigate to="/onboarding" replace />
+                    ) : (
+                      <Dashboard />
+                    )
+                  }
+                />
+                <Route path="/workouts" element={<Workouts />} />
+                <Route path="/exercises" element={<ExerciseLibrary />} />
+                <Route path="/body" element={<Body />} />
+                <Route path="/profile" element={<Profile />} />
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
-      )}
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Layout>
+          </BrowserRouter>
+        )}
+      </UnitProvider>
     </AuthContext.Provider>
   );
 }

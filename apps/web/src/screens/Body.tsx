@@ -28,11 +28,13 @@ import {
   CartesianGrid
 } from 'recharts';
 import type { BodyMeasurement } from '@yuri/shared';
+import { useUnit } from '../context/UnitContext';
 
 const BODY_PARTS = ['neck', 'shoulders', 'chest', 'biceps', 'waist', 'hips', 'legs'] as const;
 
 export default function Body() {
   const { t } = useTranslation();
+  const { unit: weightUnit, formatWeight, toDisplayWeight, fromDisplayWeight } = useUnit();
   const queryClient = useQueryClient();
   const token = localStorage.getItem('yuri_token');
 
@@ -42,7 +44,7 @@ export default function Body() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
-  const [unit, setUnit] = useState<'cm' | 'in'>('cm');
+  const [lengthUnit, setLengthUnit] = useState<'cm' | 'in'>('cm');
 
   // Measurement Form state
   const [height, setHeight] = useState('');
@@ -119,7 +121,7 @@ export default function Body() {
   // Format chart data
   const chartData = weightHistory.map((entry) => ({
     date: new Date(entry.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-    weight: entry.weight
+    weight: toDisplayWeight(entry.weight)
   }));
 
   // Save measurement mutation
@@ -199,7 +201,7 @@ export default function Body() {
   const openEditModal = () => {
     if (latestMeasurement) {
       setHeight(latestMeasurement.height ? String(latestMeasurement.height) : '');
-      setWeight(latestMeasurement.weight ? String(latestMeasurement.weight) : '');
+      setWeight(latestMeasurement.weight ? String(toDisplayWeight(latestMeasurement.weight)) : '');
       setNeck(latestMeasurement.neck ? String(latestMeasurement.neck) : '');
       setShoulders(latestMeasurement.shoulders ? String(latestMeasurement.shoulders) : '');
       setChest(latestMeasurement.chest ? String(latestMeasurement.chest) : '');
@@ -207,7 +209,7 @@ export default function Body() {
       setWaist(latestMeasurement.waist ? String(latestMeasurement.waist) : '');
       setHips(latestMeasurement.hips ? String(latestMeasurement.hips) : '');
       setUpperLeg(latestMeasurement.upperLeg ? String(latestMeasurement.upperLeg) : '');
-      setUnit(latestMeasurement.unit || 'cm');
+      setLengthUnit(latestMeasurement.unit || 'cm');
     }
     setErrorMessage(null);
     setIsModalOpen(true);
@@ -219,7 +221,7 @@ export default function Body() {
 
     const payload: Partial<BodyMeasurement> = {
       height: height ? Number(height) : undefined,
-      weight: weight ? Number(weight) : undefined,
+      weight: weight ? fromDisplayWeight(Number(weight)) : undefined,
       neck: neck ? Number(neck) : undefined,
       shoulders: shoulders ? Number(shoulders) : undefined,
       chest: chest ? Number(chest) : undefined,
@@ -227,7 +229,7 @@ export default function Body() {
       waist: waist ? Number(waist) : undefined,
       hips: hips ? Number(hips) : undefined,
       upperLeg: upperLeg ? Number(upperLeg) : undefined,
-      unit,
+      unit: lengthUnit,
       date: new Date().toISOString()
     };
 
@@ -240,13 +242,13 @@ export default function Body() {
 
     saveProgressMutation.mutate({
       date: new Date(photoDate).toISOString(),
-      weight: photoWeight ? Number(photoWeight) : undefined,
+      weight: photoWeight ? fromDisplayWeight(Number(photoWeight)) : undefined,
       photoUrls
     });
   };
 
   const bmi = latestMeasurement?.bmi;
-  const currentUnit = latestMeasurement?.unit || unit;
+  const currentUnit = latestMeasurement?.unit || lengthUnit;
 
   const getBmiPositionPercent = (val?: number): number => {
     if (!val) return 0;
@@ -268,10 +270,10 @@ export default function Body() {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex bg-surfaceElevated p-1 rounded-xl border border-surfaceElevated self-start">
+        <div className="flex items-center p-1 bg-surfaceElevated rounded-full border border-surfaceElevated self-start">
           <button
             onClick={() => setActiveTab('measurements')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
               activeTab === 'measurements'
                 ? 'bg-primary text-black shadow-md'
                 : 'text-textMuted hover:text-textPrimary'
@@ -281,7 +283,7 @@ export default function Body() {
           </button>
           <button
             onClick={() => setActiveTab('photos')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'photos'
                 ? 'bg-primary text-black shadow-md'
                 : 'text-textMuted hover:text-textPrimary'
@@ -313,8 +315,8 @@ export default function Body() {
               <h3 className="text-lg font-bold text-textPrimary">{t('body.bmiTitle')}</h3>
               {latestMeasurement?.height && latestMeasurement?.weight && (
                 <span className="text-xs text-textMuted font-medium">
-                  {latestMeasurement.height} {currentUnit === 'cm' ? 'cm' : 'in'} ·{' '}
-                  {latestMeasurement.weight} {currentUnit === 'cm' ? 'kg' : 'lbs'}
+                  {latestMeasurement.height} {latestMeasurement.unit === 'in' ? 'in' : 'cm'} ·{' '}
+                  {formatWeight(latestMeasurement.weight)}
                 </span>
               )}
             </div>
@@ -494,7 +496,7 @@ export default function Body() {
                   <option value="">Select Date A (Before)</option>
                   {progressEntries.map((entry) => (
                     <option key={entry._id || entry.id} value={entry._id || entry.id}>
-                      {new Date(entry.date).toLocaleDateString()} {entry.weight ? `(${entry.weight} kg)` : ''}
+                      {new Date(entry.date).toLocaleDateString()} {entry.weight ? `(${formatWeight(entry.weight)})` : ''}
                     </option>
                   ))}
                 </select>
@@ -509,7 +511,7 @@ export default function Body() {
                   <option value="">Select Date B (After)</option>
                   {progressEntries.map((entry) => (
                     <option key={entry._id || entry.id} value={entry._id || entry.id}>
-                      {new Date(entry.date).toLocaleDateString()} {entry.weight ? `(${entry.weight} kg)` : ''}
+                      {new Date(entry.date).toLocaleDateString()} {entry.weight ? `(${formatWeight(entry.weight)})` : ''}
                     </option>
                   ))}
                 </select>
@@ -530,7 +532,7 @@ export default function Body() {
                       })}
                     </span>
                     <span className="font-semibold text-textPrimary">
-                      {selectedA.weight ? `${selectedA.weight} kg` : 'Weight not logged'}
+                      {selectedA.weight ? formatWeight(selectedA.weight) : 'Weight not logged'}
                     </span>
                   </div>
                   <div className="aspect-[3/4] rounded-lg overflow-hidden bg-black/60 flex items-center justify-center">
@@ -557,7 +559,7 @@ export default function Body() {
                       })}
                     </span>
                     <span className="font-semibold text-textPrimary">
-                      {selectedB.weight ? `${selectedB.weight} kg` : 'Weight not logged'}
+                      {selectedB.weight ? formatWeight(selectedB.weight) : 'Weight not logged'}
                     </span>
                   </div>
                   <div className="aspect-[3/4] rounded-lg overflow-hidden bg-black/60 flex items-center justify-center">
@@ -747,26 +749,30 @@ export default function Body() {
             )}
 
             <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div className="flex items-center justify-between bg-surfaceElevated p-2 rounded-xl border border-surfaceElevated">
+              <div className="flex items-center justify-between bg-surfaceElevated p-2 rounded-2xl border border-surfaceElevated">
                 <span className="text-xs font-bold text-textMuted">{t('body.unit')}</span>
-                <div className="flex gap-1">
+                <div className="flex items-center p-1 bg-surface rounded-full border border-surfaceElevated">
                   <button
                     type="button"
-                    onClick={() => setUnit('cm')}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${
-                      unit === 'cm' ? 'bg-primary text-black' : 'text-textMuted hover:text-textPrimary'
+                    onClick={() => setLengthUnit('cm')}
+                    className={`px-3.5 py-1 text-xs font-bold rounded-full transition-all ${
+                      lengthUnit === 'cm'
+                        ? 'bg-primary text-black shadow-sm'
+                        : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    Metric (cm / kg)
+                    Metric (cm)
                   </button>
                   <button
                     type="button"
-                    onClick={() => setUnit('in')}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${
-                      unit === 'in' ? 'bg-primary text-black' : 'text-textMuted hover:text-textPrimary'
+                    onClick={() => setLengthUnit('in')}
+                    className={`px-3.5 py-1 text-xs font-bold rounded-full transition-all ${
+                      lengthUnit === 'in'
+                        ? 'bg-primary text-black shadow-sm'
+                        : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
-                    Imperial (in / lbs)
+                    Imperial (in)
                   </button>
                 </div>
               </div>
@@ -774,12 +780,12 @@ export default function Body() {
               <div className="grid grid-cols-2 gap-3 p-3 bg-primary/5 border border-primary/20 rounded-xl">
                 <div>
                   <label className="block text-xs font-bold text-textPrimary mb-1">
-                    {t('body.height')} ({unit === 'cm' ? 'cm' : 'in'}) *
+                    {t('body.height')} ({lengthUnit}) *
                   </label>
                   <input
                     type="number"
                     step="0.1"
-                    placeholder={unit === 'cm' ? '180' : '71'}
+                    placeholder={lengthUnit === 'cm' ? '180' : '71'}
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                     className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"
@@ -787,12 +793,12 @@ export default function Body() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-textPrimary mb-1">
-                    {t('body.weight')} ({unit === 'cm' ? 'kg' : 'lbs'}) *
+                    {t('body.weight')} ({weightUnit}) *
                   </label>
                   <input
                     type="number"
                     step="0.1"
-                    placeholder={unit === 'cm' ? '78' : '172'}
+                    placeholder={weightUnit === 'kg' ? '78' : '172'}
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     className="w-full bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-2 text-sm text-textPrimary focus:outline-none focus:border-primary"

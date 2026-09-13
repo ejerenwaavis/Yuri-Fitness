@@ -4,9 +4,11 @@ import { Calendar, ChevronRight, Film, Plus, Trash2, X, Dumbbell, Clock, Flame }
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutSession, Exercise } from '@yuri/shared';
+import { useUnit } from '../context/UnitContext';
 
 export default function Workouts() {
   const { t } = useTranslation();
+  const { unit, formatWeight, toDisplayWeight, fromDisplayWeight } = useUnit();
   const queryClient = useQueryClient();
   const token = localStorage.getItem('yuri_token');
 
@@ -89,28 +91,55 @@ export default function Workouts() {
     logMutation.mutate({
       date: new Date(workoutDate).toISOString(),
       durationMinutes: Number(durationMinutes) || 30,
-      exercises: validExercises.map((ex) => ({
-        name: ex.name,
-        targetSets: ex.sets || 3,
-        targetReps: ex.reps || 10,
-        targetWeight: ex.weight || 0,
-        loggedSets: Array.from({ length: ex.sets || 3 }, () => ({
-          reps: ex.reps || 10,
-          weight: ex.weight || 0,
-          completed: true
-        }))
-      }))
+      exercises: validExercises.map((ex) => {
+        const dbWeight = fromDisplayWeight(Number(ex.weight) || 0);
+        return {
+          name: ex.name,
+          targetSets: ex.sets || 3,
+          targetReps: ex.reps || 10,
+          targetWeight: dbWeight,
+          loggedSets: Array.from({ length: ex.sets || 3 }, () => ({
+            reps: ex.reps || 10,
+            weight: dbWeight,
+            completed: true
+          }))
+        };
+      })
     });
   };
 
   const calculateSessionVolume = (session: WorkoutSession): number => {
     if (!session.exercises) return 0;
     return session.exercises.reduce((total, ex) => {
+      if (Array.isArray(ex.loggedSets) && ex.loggedSets.length > 0) {
+        const loggedVol = ex.loggedSets.reduce(
+          (sum, s) => sum + ((s.reps || 0) * toDisplayWeight(s.weight || 0)),
+          0
+        );
+        return total + loggedVol;
+      }
       const sets = ex.targetSets || ex.sets || 0;
       const reps = ex.targetReps || ex.reps || 0;
-      const weight = ex.targetWeight || ex.weight || 0;
+      const weight = toDisplayWeight(ex.targetWeight || ex.weight || 0);
       return total + (sets * reps * weight);
     }, 0);
+  };
+
+  const getExerciseLoggedWeight = (ex: any) => {
+    // Pull from actual logged user input in loggedSets first
+    if (Array.isArray(ex.loggedSets) && ex.loggedSets.length > 0) {
+      const validWeights = ex.loggedSets
+        .map((s: any) => s.weight)
+        .filter((w: any) => typeof w === 'number' && !isNaN(w));
+      if (validWeights.length > 0) {
+        const actualLogged = validWeights[validWeights.length - 1];
+        if (actualLogged === 0) return 'Bodyweight';
+        return formatWeight(actualLogged);
+      }
+    }
+    const val = ex.weight || ex.targetWeight || 0;
+    if (val === 0) return 'Bodyweight';
+    return formatWeight(val);
   };
 
   return (
@@ -168,7 +197,7 @@ export default function Workouts() {
                     </h4>
                     <p className="text-xs text-textMuted mt-0.5">
                       {w.exercises?.length || 0} {t('workouts.exercises')} • {w.durationMinutes} {t('workouts.min')}
-                      {volume > 0 && ` • ${volume.toLocaleString()} vol`}
+                      {volume > 0 && ` • ${volume.toLocaleString()} ${unit}`}
                     </p>
                   </div>
                 </div>
@@ -237,7 +266,7 @@ export default function Workouts() {
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-black text-primary">
-                      {(ex.targetWeight || ex.weight || 0) > 0 ? `${ex.targetWeight || ex.weight} kg/lbs` : 'Bodyweight'}
+                      {getExerciseLoggedWeight(ex)}
                     </span>
                   </div>
                 </div>
@@ -248,7 +277,7 @@ export default function Workouts() {
             <div className="flex items-center justify-between pt-3 border-t border-surfaceElevated text-xs text-textMuted">
               <span>{t('workouts.totalVolume')}:</span>
               <span className="text-sm font-black text-primary">
-                {calculateSessionVolume(selectedSession).toLocaleString()}
+                {calculateSessionVolume(selectedSession).toLocaleString()} {unit}
               </span>
             </div>
           </div>
@@ -369,7 +398,7 @@ export default function Workouts() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-textMuted uppercase font-bold">{t('workouts.weight')}</label>
+                        <label className="block text-[10px] text-textMuted uppercase font-bold">{t('workouts.weight')} ({unit})</label>
                         <input
                           type="number"
                           min="0"
