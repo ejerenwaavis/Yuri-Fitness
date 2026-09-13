@@ -800,50 +800,49 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Commitment & Duration */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase tracking-wider">
-                      Days / Week
-                    </label>
-                    <div className="flex items-center gap-2">
-                      {[2, 3, 4, 5, 6].map((d) => (
-                        <button
-                          key={d}
-                          type="button"
-                          onClick={() => setDaysAvailable(d)}
-                          className={`w-10 h-10 rounded-xl text-sm font-black border transition-all ${
-                            daysAvailable === d
-                              ? 'bg-primary text-black border-primary'
-                              : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
-                          }`}
-                        >
-                          {d}
-                        </button>
-                      ))}
-                    </div>
+                {/* Days / Week */}
+                <div>
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase tracking-wider">
+                    Days / Week
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[2, 3, 4, 5, 6].map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setDaysAvailable(d)}
+                        className={`h-11 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${
+                          daysAvailable === d
+                            ? 'bg-primary text-black border-primary shadow-[0_0_12px_rgba(124,255,61,0.3)]'
+                            : 'bg-surfaceElevated text-textMuted border-surfaceElevated hover:text-textPrimary'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-textMuted mb-1.5 uppercase tracking-wider">
-                      Duration (min)
-                    </label>
-                    <div className="flex items-center gap-2">
-                      {[20, 30, 45, 60].map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setSessionLength(m)}
-                          className={`px-3 h-10 rounded-xl text-sm font-black border transition-all ${
-                            sessionLength === m
-                              ? 'bg-primary text-black border-primary'
-                              : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
-                          }`}
-                        >
-                          {m}m
-                        </button>
-                      ))}
-                    </div>
+                {/* Duration */}
+                <div>
+                  <label className="block text-xs font-bold text-textMuted mb-2 uppercase tracking-wider">
+                    Duration (min)
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[20, 30, 45, 60].map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setSessionLength(m)}
+                        className={`h-11 rounded-xl text-sm font-black border transition-all flex items-center justify-center ${
+                          sessionLength === m
+                            ? 'bg-primary text-black border-primary shadow-[0_0_12px_rgba(124,255,61,0.3)]'
+                            : 'bg-surfaceElevated text-textMuted border-surfaceElevated hover:text-textPrimary'
+                        }`}
+                      >
+                        {m}m
+                      </button>
+                    ))}
                   </div>
                 </div>
 
