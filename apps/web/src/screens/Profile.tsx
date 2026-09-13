@@ -24,10 +24,12 @@ import {
   Plus
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { useUnit } from '../context/UnitContext';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, logout, updateUser } = useContext(AuthContext);
   const { unit, setUnit } = useUnit();
   const { t, i18n } = useTranslation();
@@ -178,11 +180,26 @@ export default function Profile() {
       if (!res.ok) throw new Error('Failed to update fitness profile');
       const updated = await res.json();
       updateUser(updated);
-      setFitnessFeedback({ type: 'success', msg: 'Training profile updated!' });
+
+      // Auto-regenerate active routine for the newly selected goal and equipment
+      try {
+        await fetch('/api/workouts/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ profile: updated.profile })
+        });
+      } catch (genErr) {
+        console.warn('Routine auto-sync notice:', genErr);
+      }
+
+      setFitnessFeedback({ type: 'success', msg: 'Training profile and active routine synced!' });
       setTimeout(() => {
         setFitnessFeedback(null);
         setIsFitnessOpen(false);
-      }, 1500);
+      }, 1200);
     } catch (err: any) {
       setFitnessFeedback({ type: 'error', msg: err.message || 'Failed to save profile' });
     } finally {
@@ -903,22 +920,36 @@ export default function Profile() {
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="pt-3 border-t border-surfaceElevated space-y-3">
               <button
                 type="button"
-                onClick={() => setIsFitnessOpen(false)}
-                className="px-4 py-2 text-xs font-bold text-textMuted hover:text-textPrimary bg-surfaceElevated rounded-xl"
+                onClick={() => {
+                  setIsFitnessOpen(false);
+                  navigate('/onboarding');
+                }}
+                className="w-full py-2.5 px-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary hover:bg-primary/20 flex items-center justify-center gap-2 transition-all"
               >
-                Cancel
+                <Sliders size={14} />
+                <span>Redo Guided Intake Flow</span>
               </button>
-              <button
-                type="button"
-                disabled={fitnessUpdating}
-                onClick={handleSaveFitness}
-                className="bg-primary text-black font-black px-6 py-2 rounded-xl text-xs hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
-              >
-                {fitnessUpdating ? 'Saving...' : 'Save Profile'}
-              </button>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsFitnessOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-textMuted hover:text-textPrimary bg-surfaceElevated rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={fitnessUpdating}
+                  onClick={handleSaveFitness}
+                  className="bg-primary text-black font-black px-6 py-2 rounded-xl text-xs hover:opacity-90 transition-all disabled:opacity-50 shadow-sm"
+                >
+                  {fitnessUpdating ? 'Syncing...' : 'Save Profile & Update Routine'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

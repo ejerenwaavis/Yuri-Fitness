@@ -31,6 +31,8 @@ const WorkoutSessionSchema = new mongoose_1.default.Schema({
         enum: ['generated', 'ai-edited', 'manual'],
         default: 'generated'
     },
+    title: { type: String },
+    goal: { type: String, enum: ['hypertrophy', 'strength', 'fat_loss', 'endurance'], default: 'hypertrophy' },
     exercises: [SessionExerciseSchema],
     rpe: { type: String } // Overall session RPE emoji
 }, { timestamps: true });

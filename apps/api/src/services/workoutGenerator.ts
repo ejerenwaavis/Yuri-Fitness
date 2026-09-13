@@ -9,6 +9,8 @@ interface GeneratorOptions {
 export const generateWorkoutRoutine = async (options: GeneratorOptions): Promise<{
   exercises: SessionExercise[];
   durationMinutes: number;
+  title: string;
+  goal: string;
 }> => {
   const { profile } = options;
   const goal = profile.goal || 'hypertrophy';
@@ -24,18 +26,22 @@ export const generateWorkoutRoutine = async (options: GeneratorOptions): Promise
   else if (sessionLength <= 45) exerciseCount = 5;
   else exerciseCount = 6;
 
-  // Determine sets and rep targets by goal
+  // Determine sets, rep targets and routine title by goal
   let targetSets = 3;
   let targetReps = 10;
+  let title = 'Hypertrophy & Muscle Growth Split';
   if (goal === 'strength') {
     targetSets = 4;
     targetReps = 5;
+    title = 'Raw Strength & Power Focus';
   } else if (goal === 'fat_loss') {
     targetSets = 3;
     targetReps = 14;
+    title = 'Metabolic Conditioning & Burn';
   } else if (goal === 'endurance') {
     targetSets = 3;
     targetReps = 16;
+    title = 'Muscular Endurance & Stamina Circuit';
   }
 
   // Fetch all exercises from DB
@@ -169,6 +175,8 @@ export const generateWorkoutRoutine = async (options: GeneratorOptions): Promise
 
   return {
     exercises,
-    durationMinutes: sessionLength
+    durationMinutes: sessionLength,
+    title,
+    goal
   };
 };

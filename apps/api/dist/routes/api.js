@@ -36,12 +36,18 @@ router.get('/workouts/today', async (req, res) => {
         }
         // Check for an active uncompleted session
         let workout = await WorkoutSession_1.WorkoutSessionModel.findOne(filter).sort({ date: -1 });
-        if (!workout) {
-            // If none active, check user profile to generate one
-            let profile = {};
-            if (userId !== 'guest_user') {
-                const user = await User_1.UserModel.findById(userId);
-                profile = user?.profile || {};
+        // Check user profile for goal and equipment
+        let profile = {};
+        if (userId !== 'guest_user') {
+            const user = await User_1.UserModel.findById(userId);
+            profile = user?.profile || {};
+        }
+        // Check if the current session has any logged sets
+        const hasLoggedSets = workout?.exercises?.some((e) => e.loggedSets?.some((ls) => ls.completed));
+        // If no session exists OR user changed their goal and hasn't logged sets yet, generate matching routine
+        if (!workout || (!hasLoggedSets && profile.goal && workout.goal && workout.goal !== profile.goal)) {
+            if (workout && !hasLoggedSets) {
+                await WorkoutSession_1.WorkoutSessionModel.findByIdAndDelete(workout._id);
             }
             const generated = await (0, workoutGenerator_1.generateWorkoutRoutine)({ profile });
             workout = await WorkoutSession_1.WorkoutSessionModel.create({
@@ -50,6 +56,8 @@ router.get('/workouts/today', async (req, res) => {
                 durationMinutes: generated.durationMinutes,
                 completed: false,
                 source: 'generated',
+                title: generated.title,
+                goal: generated.goal,
                 exercises: generated.exercises
             });
         }
@@ -104,12 +112,22 @@ router.post('/workouts/generate', async (req, res) => {
             profile = user?.profile;
         }
         const routine = await (0, workoutGenerator_1.generateWorkoutRoutine)({ profile: profile || {} });
+        // If an uncompleted workout exists with zero logged sets, replace it
+        if (userId !== 'guest_user') {
+            const existingUnstarted = await WorkoutSession_1.WorkoutSessionModel.findOne({ userId, completed: false }).sort({ date: -1 });
+            const hasLogged = existingUnstarted?.exercises?.some((e) => e.loggedSets?.some((ls) => ls.completed));
+            if (existingUnstarted && !hasLogged) {
+                await WorkoutSession_1.WorkoutSessionModel.findByIdAndDelete(existingUnstarted._id);
+            }
+        }
         const newSession = await WorkoutSession_1.WorkoutSessionModel.create({
             userId,
             date: new Date().toISOString(),
             durationMinutes: routine.durationMinutes,
             completed: false,
             source: 'generated',
+            title: routine.title,
+            goal: routine.goal,
             exercises: routine.exercises
         });
         res.status(201).json(newSession);

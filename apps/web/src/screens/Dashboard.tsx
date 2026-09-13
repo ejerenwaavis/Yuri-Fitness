@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -14,13 +14,16 @@ import {
   Sparkles,
   Dumbbell,
   ArrowRight,
-  Zap
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import YuriAiDrawer from '../components/YuriAiDrawer';
 import { useUnit } from '../context/UnitContext';
+import { AuthContext } from '../App';
 
 export default function Dashboard() {
+  const { user } = useContext(AuthContext);
   const { t } = useTranslation();
   const { unit, toDisplayWeight } = useUnit();
   const navigate = useNavigate();
@@ -93,6 +96,33 @@ export default function Dashboard() {
 
   const metrics = statsData?.metrics || { minutes: 45, exercises: 5, sets: 15, maxWeight: 60 };
 
+  const activeGoal = (user?.profile?.goal || todayWorkout?.goal || 'hypertrophy').toLowerCase();
+
+  const goalMeta: Record<string, { label: string; title: string; subtitle: string }> = {
+    endurance: {
+      label: 'Muscular Endurance',
+      title: todayWorkout?.title || 'Muscular Endurance & Stamina Circuit',
+      subtitle: '15+ reps per set • High work capacity & stamina • Athletic pace'
+    },
+    strength: {
+      label: 'Raw Strength',
+      title: todayWorkout?.title || 'Raw Strength & Heavy Compound Power',
+      subtitle: '3–6 reps per set • Maximum tension • Heavy compound loading'
+    },
+    fat_loss: {
+      label: 'Fat Loss & Conditioning',
+      title: todayWorkout?.title || 'Metabolic Conditioning & Burn',
+      subtitle: '12–15 reps per set • Elevated heart rate • High density'
+    },
+    hypertrophy: {
+      label: 'Hypertrophy',
+      title: todayWorkout?.title || 'Hypertrophy & Muscle Growth Split',
+      subtitle: '8–12 reps per set • Progressive overload • Volume accumulation'
+    }
+  };
+
+  const currentMeta = goalMeta[activeGoal] || goalMeta.hypertrophy;
+
   return (
     <div className="p-4 sm:p-6 pb-24 lg:pb-6 space-y-6 animate-in fade-in duration-300">
       {/* Welcome Header */}
@@ -124,9 +154,12 @@ export default function Dashboard() {
         ) : todayWorkout ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
                   {todayWorkout.completed ? 'Completed Today' : "Today's Routine"}
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-surfaceElevated text-textPrimary border border-surfaceElevated flex items-center gap-1">
+                  <Zap size={11} className="text-primary" /> {currentMeta.label}
                 </span>
                 {todayWorkout.source === 'ai-edited' && (
                   <span className="text-[10px] font-bold text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/20">
@@ -139,18 +172,29 @@ export default function Dashboard() {
               </span>
             </div>
 
+            {/* Goal Out-of-Sync Warning & 1-Tap Sync Button */}
+            {todayWorkout.goal && todayWorkout.goal !== activeGoal && !todayWorkout.completed && (
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-primary/10 border border-primary/30 text-xs">
+                <span className="text-textPrimary font-medium">
+                  Profile updated to <strong className="text-primary capitalize">{activeGoal}</strong>. Update routine?
+                </span>
+                <button
+                  onClick={() => generateMutation.mutate()}
+                  disabled={generateMutation.isPending}
+                  className="flex items-center gap-1 px-3 py-1 bg-primary text-black font-black text-xs rounded-lg shadow hover:opacity-90 transition-opacity"
+                >
+                  <RefreshCw size={12} className={generateMutation.isPending ? 'animate-spin' : ''} />
+                  <span>{generateMutation.isPending ? 'Syncing...' : 'Sync Routine'}</span>
+                </button>
+              </div>
+            )}
+
             <div>
               <h3 className="text-2xl font-black text-textPrimary tracking-tight">
-                {todayWorkout.exercises && todayWorkout.exercises.length > 0
-                  ? todayWorkout.exercises[0].name.includes('Press')
-                    ? 'Upper Body Push & Hypertrophy'
-                    : todayWorkout.exercises[0].name.includes('Squat') || todayWorkout.exercises[0].name.includes('Leg')
-                    ? 'Lower Body Power & Quad Strength'
-                    : 'Targeted Hypertrophy Routine'
-                  : 'Daily Training Session'}
+                {todayWorkout.title || currentMeta.title}
               </h3>
               <p className="text-xs text-textMuted mt-1">
-                {todayWorkout.exercises?.length || 0} exercises programmed • Balanced volume & progressive overload
+                {todayWorkout.exercises?.length || 0} exercises programmed • {currentMeta.subtitle}
               </p>
             </div>
 

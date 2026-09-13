@@ -19,20 +19,24 @@ const generateWorkoutRoutine = async (options) => {
         exerciseCount = 5;
     else
         exerciseCount = 6;
-    // Determine sets and rep targets by goal
+    // Determine sets, rep targets and routine title by goal
     let targetSets = 3;
     let targetReps = 10;
+    let title = 'Hypertrophy & Muscle Growth Split';
     if (goal === 'strength') {
         targetSets = 4;
         targetReps = 5;
+        title = 'Raw Strength & Power Focus';
     }
     else if (goal === 'fat_loss') {
         targetSets = 3;
         targetReps = 14;
+        title = 'Metabolic Conditioning & Burn';
     }
     else if (goal === 'endurance') {
         targetSets = 3;
         targetReps = 16;
+        title = 'Muscular Endurance & Stamina Circuit';
     }
     // Fetch all exercises from DB
     const allExercises = await Exercise_1.ExerciseModel.find({});
@@ -153,7 +157,9 @@ const generateWorkoutRoutine = async (options) => {
     }));
     return {
         exercises,
-        durationMinutes: sessionLength
+        durationMinutes: sessionLength,
+        title,
+        goal
     };
 };
 exports.generateWorkoutRoutine = generateWorkoutRoutine;
