@@ -28,7 +28,7 @@ router.post('/chat', auth_1.optionalAuth, async (req, res) => {
             return;
         }
         // Check tier limits: Free users are capped on AI swaps
-        if (userId !== 'guest') {
+        if (userId && userId !== 'guest' && require('mongoose').Types.ObjectId.isValid(userId)) {
             const user = await User_1.UserModel.findById(userId);
             if (user && user.subscriptionStatus === 'free') {
                 // Free tier paywall check for AI customization

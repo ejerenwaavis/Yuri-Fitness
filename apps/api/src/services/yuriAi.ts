@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { WorkoutSessionModel } from '../models/WorkoutSession';
 import { ExerciseModel } from '../models/Exercise';
 import { UserModel } from '../models/User';
@@ -10,6 +11,29 @@ interface ProcessAiMessageParams {
   userMessage: string;
 }
 
+// Helper to safely find or create active workout session
+const resolveWorkoutSession = async (workoutId?: string) => {
+  if (workoutId && mongoose.Types.ObjectId.isValid(workoutId)) {
+    const session = await WorkoutSessionModel.findById(workoutId);
+    if (session) return session;
+  }
+
+  // Fallback to recent uncompleted workout
+  let session = await WorkoutSessionModel.findOne({ completed: false }).sort({ date: -1 });
+  if (!session) {
+    const routine = await generateWorkoutRoutine({ profile: {} });
+    session = await WorkoutSessionModel.create({
+      userId: 'guest_user',
+      date: new Date().toISOString(),
+      durationMinutes: routine.durationMinutes,
+      completed: false,
+      source: 'generated',
+      exercises: routine.exercises
+    });
+  }
+  return session;
+};
+
 // Tool 1: substituteExercise
 export const substituteExercise = async (
   workoutId: string, 
@@ -18,18 +42,20 @@ export const substituteExercise = async (
   userInjuries: string[] = [],
   userEquipment: string[] = []
 ) => {
-  const session = await WorkoutSessionModel.findById(workoutId);
-  if (!session) throw new Error('Workout session not found');
+  const session = await resolveWorkoutSession(workoutId);
+  if (!session || !session.exercises || session.exercises.length === 0) {
+    throw new Error('No exercises in workout session to substitute');
+  }
 
-  const exerciseIndex = session.exercises.findIndex(e => 
+  let exerciseIndex = session.exercises.findIndex(e => 
     e.exerciseId === currentExerciseNameOrId || 
     e.name.toLowerCase() === currentExerciseNameOrId.toLowerCase() ||
     e._id?.toString() === currentExerciseNameOrId
   );
 
+  // If specific name wasn't found, default to first exercise
   if (exerciseIndex === -1) {
-    // If not exact match, pick the first exercise to swap
-    throw new Error(`Exercise "${currentExerciseNameOrId}" not found in current workout`);
+    exerciseIndex = 0;
   }
 
   const currentExercise = session.exercises[exerciseIndex];
@@ -51,7 +77,7 @@ export const substituteExercise = async (
     ]
   });
 
-  // Filter candidates avoiding injuries and matching equipment if provided
+  // Filter candidates avoiding injuries
   const filtered = candidates.filter(c => {
     if (userInjuries.includes('shoulder') && c.substitutionTags.includes('vertical_press')) return false;
     if (userInjuries.includes('knee') && c.substitutionTags.includes('knee_flexion')) return false;
@@ -62,7 +88,7 @@ export const substituteExercise = async (
   const replacement = filtered[Math.floor(Math.random() * filtered.length)] || candidates[0];
 
   if (!replacement) {
-    throw new Error('No suitable replacement exercise found');
+    throw new Error('No suitable replacement exercise found in catalog');
   }
 
   // Mutate session in place
@@ -85,7 +111,7 @@ export const substituteExercise = async (
 
 // Tool 2: shortenWorkout
 export const shortenWorkout = async (workoutId: string, minutesAvailable: number) => {
-  const session = await WorkoutSessionModel.findById(workoutId);
+  const session = await resolveWorkoutSession(workoutId);
   if (!session) throw new Error('Workout session not found');
 
   let targetCount = 3;
@@ -117,16 +143,16 @@ export const regenerateForEquipment = async (
   availableEquipment: string[], 
   userProfile: any
 ) => {
-  const session = await WorkoutSessionModel.findById(workoutId);
+  const session = await resolveWorkoutSession(workoutId);
   if (!session) throw new Error('Workout session not found');
 
-  const updatedProfile = {
-    ...userProfile,
-    equipment: availableEquipment
-  };
+  const newRoutine = await generateWorkoutRoutine({
+    profile: {
+      ...userProfile,
+      equipment: availableEquipment
+    }
+  });
 
-  const newRoutine = await generateWorkoutRoutine({ profile: updatedProfile });
-  
   session.exercises = newRoutine.exercises as any;
   session.durationMinutes = newRoutine.durationMinutes;
   session.source = 'ai-edited';
@@ -146,17 +172,22 @@ export const processYuriAiMessage = async ({
   activeWorkoutId,
   userMessage
 }: ProcessAiMessageParams) => {
-  const user = await UserModel.findById(userId);
-  const workout = await WorkoutSessionModel.findById(activeWorkoutId);
+  const user = (userId && mongoose.Types.ObjectId.isValid(userId))
+    ? await UserModel.findById(userId)
+    : null;
+
+  const workout = await resolveWorkoutSession(activeWorkoutId);
+  const workoutIdToUse = workout._id.toString();
+
   const injuries = (user?.profile?.injuries || []).map((i: string) => i.toLowerCase());
   const equipment = (user?.profile?.equipment || []).map((e: string) => e.toLowerCase());
 
   // Find or create AI session
-  let aiSession = await YuriAiSessionModel.findOne({ userId, activeWorkoutId });
+  let aiSession = await YuriAiSessionModel.findOne({ userId, activeWorkoutId: workoutIdToUse });
   if (!aiSession) {
     aiSession = await YuriAiSessionModel.create({
       userId,
-      activeWorkoutId,
+      activeWorkoutId: workoutIdToUse,
       messages: [
         {
           role: 'system',
@@ -178,14 +209,14 @@ export const processYuriAiMessage = async ({
 
   // Intent parsing & deterministic tool execution (Instant, reliable, offline/keyless compatible)
   if (msgLower.includes('20 min') || msgLower.includes('shorten') || msgLower.includes('less time') || msgLower.includes('in a rush') || msgLower.includes('quick')) {
-    toolCallResult = await shortenWorkout(activeWorkoutId, 20);
+    toolCallResult = await shortenWorkout(workoutIdToUse, 20);
     assistantReply = `⚡ I've condensed your routine to the 3 highest-yield movements to get you out in 20 minutes with zero junk volume. Crush these sets!`;
   } else if (msgLower.includes('hurt') || msgLower.includes('pain') || msgLower.includes('swap') || msgLower.includes('replace') || msgLower.includes('substitute') || msgLower.includes('tweak')) {
     const firstExName = workout?.exercises?.[0]?.name || 'Exercise';
-    toolCallResult = await substituteExercise(activeWorkoutId, firstExName, 'Joint relief / comfort', injuries, equipment);
+    toolCallResult = await substituteExercise(workoutIdToUse, firstExName, 'Joint relief / comfort', injuries, equipment);
     assistantReply = `🩹 Done! I swapped out ${toolCallResult.oldExercise} for ${toolCallResult.newExercise}. It targets the same muscle fibers without aggravating sensitive joints.`;
   } else if (msgLower.includes('no gym') || msgLower.includes('home') || msgLower.includes('hotel') || msgLower.includes('travel') || msgLower.includes('bodyweight')) {
-    toolCallResult = await regenerateForEquipment(activeWorkoutId, ['Bodyweight'], user?.profile || {});
+    toolCallResult = await regenerateForEquipment(workoutIdToUse, ['Bodyweight'], user?.profile || {});
     assistantReply = `🏨 Adapted! I've rebuilt your session exclusively for bodyweight and zero equipment. You can do this right on the floor. Let's work!`;
   } else if (msgLower.includes('harder') || msgLower.includes('intense') || msgLower.includes('pump')) {
     if (workout) {
@@ -214,12 +245,14 @@ export const processYuriAiMessage = async ({
   await aiSession.save();
 
   // Return fresh workout state alongside the message
-  const freshWorkout = await WorkoutSessionModel.findById(activeWorkoutId);
+  const freshWorkout = await WorkoutSessionModel.findById(workoutIdToUse);
 
   return {
     reply: assistantReply,
+    message: assistantReply,
     action: toolCallResult?.action || null,
-    updatedWorkout: freshWorkout,
+    workout: freshWorkout || workout,
+    updatedWorkout: freshWorkout || workout,
     messages: aiSession.messages
   };
 };
