@@ -34,11 +34,17 @@ function Layout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const location = useLocation();
 
-  // Full-screen modes: Runner and Onboarding hide standard app navigation chrome
-  const isFullScreen =
-    location.pathname.startsWith('/runner') || location.pathname === '/onboarding';
+  // Active workout runner: strictly fixed full viewport, zero scroll, no install prompt collision
+  if (location.pathname.startsWith('/runner')) {
+    return (
+      <div className="fixed inset-0 w-full h-[100dvh] max-h-[100dvh] overflow-hidden bg-background text-textPrimary">
+        {children}
+      </div>
+    );
+  }
 
-  if (isFullScreen) {
+  // Onboarding wizard: scrollable intake form
+  if (location.pathname === '/onboarding') {
     return (
       <div className="min-h-screen bg-background text-textPrimary">
         {children}
