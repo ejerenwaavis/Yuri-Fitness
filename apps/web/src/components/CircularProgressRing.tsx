@@ -49,7 +49,7 @@ export default function CircularProgressRing({
             strokeLinecap="round"
             fill="transparent"
             style={{
-              filter: 'drop-shadow(0 0 8px rgba(124, 255, 61, 0.4))'
+              filter: 'drop-shadow(0 0 6px rgba(172, 237, 139, 0.25))'
             }}
           />
         </svg>

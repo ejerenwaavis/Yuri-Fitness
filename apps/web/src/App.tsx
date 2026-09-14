@@ -118,7 +118,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center py-1 px-2.5 rounded-full transition-all duration-200 ` +
                 (isActive
-                  ? 'text-primary font-bold drop-shadow-[0_0_8px_rgba(124,255,61,0.6)]'
+                  ? 'text-primary font-bold'
                   : 'text-textMuted hover:text-textPrimary')
               }
             >
