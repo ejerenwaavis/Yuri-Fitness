@@ -1,5 +1,4 @@
 import React from 'react';
-import { Dumbbell, Flame, Clock, Trophy } from 'lucide-react';
 import StatCard from './StatCard';
 import { useUnit } from '../context/UnitContext';
 
@@ -44,26 +43,22 @@ export default function QuickStatsGrid({ stats, isLoading }: QuickStatsGridProps
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <StatCard
-        icon={Trophy}
         label="Total Workouts"
         value={workouts}
         trend={workoutsTrend}
       />
       <StatCard
-        icon={Clock}
         label="Active Time"
         value={`${minutes}m`}
         trend={minutesTrend}
       />
       <StatCard
-        icon={Dumbbell}
         label="Total Volume"
         value={displayVolume.toLocaleString()}
         unit={unit}
         trend={volumeTrend}
       />
       <StatCard
-        icon={Flame}
         label="Calories Burned"
         value={calories.toLocaleString()}
         unit="kcal"
