@@ -75,10 +75,10 @@ function Layout({ children }: { children: React.ReactNode }) {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `relative flex items-center gap-3.5 px-4 py-3 rounded-2xl font-bold text-sm transition-all ` +
+                  `relative flex items-center gap-3.5 px-4 py-3 rounded-2xl font-bold text-sm transition-all border ` +
                   (isActive
-                    ? 'bg-surfaceElevated text-[#8ce85b] shadow-sm'
-                    : 'text-textMuted hover:bg-surfaceElevated/50 hover:text-textPrimary')
+                    ? 'bg-[#111F12] text-[#8ce85b] border-[#8ce85b]/20 shadow-sm'
+                    : 'border-transparent text-textMuted hover:bg-[#111F12]/50 hover:text-textPrimary')
                 }
               >
                 {({ isActive }) => (
@@ -117,16 +117,16 @@ function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Floating Pill Bottom Tab Bar for Mobile (Nike-style capsule dock) */}
       <div className="lg:hidden fixed bottom-4 inset-x-0 mx-auto max-w-sm w-[calc(100%-2rem)] z-40 pointer-events-auto">
-        <nav className="bg-surface/90 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_12px_36px_rgba(0,0,0,0.7)] px-2.5 py-1.5 flex justify-around items-center relative overflow-hidden">
+        <nav className="bg-surface/90 backdrop-blur-xl border border-white/10 rounded-full shadow-[0_12px_36px_rgba(0,0,0,0.7)] px-2.5 py-1.5 flex justify-around items-center relative">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `relative flex flex-col items-center justify-center py-1.5 px-3 transition-all duration-200 ` +
+                `relative flex flex-col items-center justify-center py-1.5 px-3 rounded-full transition-all duration-200 border ` +
                 (isActive
-                  ? 'text-[#8ce85b]'
-                  : 'text-textMuted hover:text-textPrimary')
+                  ? 'bg-[#111F12] text-[#8ce85b] border-[#8ce85b]/20 shadow-sm'
+                  : 'border-transparent text-textMuted hover:text-textPrimary')
               }
             >
               {({ isActive }) => (
@@ -147,7 +147,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
                   {/* Green underscore indicator matching reference image */}
                   {isActive && (
-                    <span className="absolute -bottom-1.5 w-6 h-[2.5px] bg-[#8ce85b] rounded-full shadow-[0_0_8px_rgba(140,232,91,0.8)]" />
+                    <span className="absolute bottom-0 w-5 h-[2px] bg-[#8ce85b] rounded-full shadow-[0_0_8px_rgba(140,232,91,0.8)]" />
                   )}
                 </>
               )}
