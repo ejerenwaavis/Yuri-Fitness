@@ -77,12 +77,16 @@ function Layout({ children }: { children: React.ReactNode }) {
                 className={({ isActive }) =>
                   `flex items-center gap-3.5 px-4 py-3 rounded-2xl font-bold text-sm transition-all ` +
                   (isActive
-                    ? 'bg-surfaceElevated text-primary border border-primary/30 shadow-sm'
+                    ? 'bg-surfaceElevated text-textPrimary border border-primary/40 shadow-sm'
                     : 'text-textMuted hover:bg-surfaceElevated/50 hover:text-textPrimary')
                 }
               >
-                <item.icon size={19} />
-                <span>{item.label}</span>
+                {({ isActive }) => (
+                  <>
+                    <item.icon size={19} className={isActive ? 'text-primary' : 'text-textMuted'} />
+                    <span className={isActive ? 'text-textPrimary font-bold' : ''}>{item.label}</span>
+                  </>
+                )}
               </NavLink>
             ))}
           </nav>
@@ -116,16 +120,27 @@ function Layout({ children }: { children: React.ReactNode }) {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center py-1 px-2.5 rounded-full transition-all duration-200 ` +
+                `flex flex-col items-center justify-center py-1.5 px-3 rounded-full transition-all duration-200 ` +
                 (isActive
-                  ? 'text-primary font-bold'
-                  : 'text-textMuted hover:text-textPrimary')
+                  ? 'bg-primary/20 text-textPrimary border border-primary/40 shadow-sm'
+                  : 'text-textMuted hover:text-textPrimary border border-transparent')
               }
             >
               {({ isActive }) => (
                 <>
-                  <item.icon size={20} className={`transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
-                  <span className="text-xs font-bold mt-0.5 tracking-tight">{item.label}</span>
+                  <item.icon
+                    size={20}
+                    className={`transition-transform duration-200 ${
+                      isActive ? 'text-primary scale-110' : 'text-textMuted'
+                    }`}
+                  />
+                  <span
+                    className={`text-[11px] mt-0.5 tracking-tight transition-colors ${
+                      isActive ? 'text-textPrimary font-black' : 'font-medium text-textMuted'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </>
               )}
             </NavLink>

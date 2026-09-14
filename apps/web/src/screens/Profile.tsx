@@ -261,38 +261,34 @@ export default function Profile() {
         </button>
       </div>
 
-      {/* 1. User Summary Card (Green rim-lit avatar, admin/pro badge, edit button) */}
-      <div className="bg-surface p-5 rounded-2xl border border-surfaceElevated flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-3.5 sm:gap-4">
+      {/* 1. User Summary Card (Green rim-lit avatar, right-aligned role badge) */}
+      <div className="bg-surface p-5 rounded-2xl border border-surfaceElevated flex items-start justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
           {user?.avatar ? (
             <img
               src={user.avatar}
               alt="Profile"
-              className="w-14 h-14 rounded-2xl border-2 border-primary/50 object-cover shadow-[0_0_12px_rgba(124,255,61,0.2)]"
+              className="w-14 h-14 rounded-2xl border-2 border-primary/50 object-cover shadow-sm shrink-0"
             />
           ) : (
-            <div className="w-14 h-14 rounded-2xl bg-surfaceElevated border-2 border-primary/40 flex items-center justify-center text-primary shadow-[0_0_12px_rgba(124,255,61,0.2)]">
+            <div className="w-14 h-14 rounded-2xl bg-surfaceElevated border-2 border-primary/40 flex items-center justify-center text-primary shadow-sm shrink-0">
               <UserIcon size={26} />
             </div>
           )}
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg sm:text-xl font-black text-textPrimary">{user?.name || 'Avis Ejerenwa'}</h3>
-              <span className="text-[10px] sm:text-xs uppercase font-black px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">
-                {user?.role === 'admin' ? 'ADMIN' : isPro ? 'PRO' : 'MEMBER'}
-              </span>
-            </div>
-            <p className="text-textMuted text-xs sm:text-sm mt-0.5">{user?.email || 'ejerenwaavis@gmail.com'}</p>
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-xl font-bold text-textPrimary tracking-tight">
+              {user?.name || 'Avis Ejerenwa'}
+            </h3>
+            <p className="text-textMuted text-xs sm:text-sm mt-0.5 truncate">
+              {user?.email || 'ejerenwaavis@gmail.com'}
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={() => setIsAccountOpen(true)}
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-primary bg-black/30 hover:bg-primary/15 border border-primary/40 hover:border-primary px-3.5 py-1.5 rounded-full transition-all active:scale-95 shadow-sm"
-        >
-          <Pencil size={13} className="text-primary" />
-          <span>Edit</span>
-        </button>
+        {/* Role Badge right-justified and aligned with top of the name */}
+        <span className="text-[10px] sm:text-xs uppercase font-bold px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40 shrink-0 self-start mt-0.5 tracking-wider">
+          {user?.role === 'admin' ? 'ADMIN' : isPro ? 'PRO' : 'MEMBER'}
+        </span>
       </div>
 
       {/* 2. Membership & Subscription Card */}
