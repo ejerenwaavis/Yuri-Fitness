@@ -13,7 +13,7 @@ export default function StatCard({ icon: Icon, label, value, trend, unit }: Stat
   return (
     <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-surfaceElevated shadow-lg flex flex-col justify-between hover:border-primary/40 transition-all group">
       <div className="flex items-center justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-[0_0_12px_rgba(124,255,61,0.2)]">
+        <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-sm">
           <Icon size={20} />
         </div>
         {trend && (

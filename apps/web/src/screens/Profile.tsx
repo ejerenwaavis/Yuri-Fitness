@@ -288,7 +288,7 @@ export default function Profile() {
 
         <button
           onClick={() => setIsAccountOpen(true)}
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-textPrimary bg-surfaceElevated hover:bg-primary/20 border border-surfaceElevated hover:border-primary/40 px-3.5 py-1.5 rounded-xl transition-all shadow-sm"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-primary bg-black/30 hover:bg-primary/15 border border-primary/40 hover:border-primary px-3.5 py-1.5 rounded-full transition-all active:scale-95 shadow-sm"
         >
           <Pencil size={13} className="text-primary" />
           <span>Edit</span>

@@ -16,7 +16,7 @@ export default function MembershipCard({
   const isPro = subscriptionStatus === 'pro' || subscriptionStatus === 'active';
 
   return (
-    <div className="relative rounded-2xl sm:rounded-3xl border border-primary/30 bg-surface overflow-hidden p-6 sm:p-7 shadow-xl flex flex-col justify-between group">
+    <div className="relative rounded-2xl sm:rounded-3xl border border-surfaceElevated bg-surface overflow-hidden p-6 sm:p-7 shadow-xl flex flex-col justify-between group">
       {/* Photo bleed on the right edge */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none opacity-20 group-hover:opacity-30 transition-opacity duration-500">
         <img
@@ -31,19 +31,19 @@ export default function MembershipCard({
         {/* Top Header: Icon + Title + Tier Badge */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shadow-[0_0_10px_rgba(124,255,61,0.2)]">
+            <div className="w-9 h-9 rounded-xl bg-surfaceElevated/80 border border-surfaceElevated flex items-center justify-center text-primary shadow-sm">
               <CreditCard size={18} />
             </div>
-            <h3 className="text-base sm:text-lg font-black text-textPrimary tracking-tight">
+            <h3 className="text-base sm:text-lg font-bold text-textPrimary tracking-tight">
               Membership Plan
             </h3>
           </div>
 
           <span
-            className={`text-xs font-black uppercase px-3 py-1 rounded-full border transition-all ${
+            className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border transition-all ${
               isPro
-                ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(124,255,61,0.3)]'
-                : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
+                ? 'bg-primary/20 text-primary border-primary/40'
+                : 'bg-surfaceElevated/70 text-textMuted border-surfaceElevated'
             }`}
           >
             {isPro ? 'Pro Active' : 'Free Tier'}
@@ -62,18 +62,17 @@ export default function MembershipCard({
       <div className="relative z-10">
         <button
           onClick={onUpgrade}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-black font-black text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 active:scale-[0.98] transition-all"
+          className="w-full inline-flex items-center justify-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all active:scale-[0.98] shadow-sm"
         >
           {isPro ? (
             <>
               <span>Manage Subscription</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={15} />
             </>
           ) : (
             <>
-              <Sparkles size={16} />
               <span>Upgrade to Pro</span>
-              <ArrowRight size={16} />
+              <ArrowRight size={15} />
             </>
           )}
         </button>

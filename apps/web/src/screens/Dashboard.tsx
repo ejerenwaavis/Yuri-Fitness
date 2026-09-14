@@ -174,7 +174,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsAiOpen(true)}
-            className="flex items-center gap-2 bg-surface border border-primary/30 hover:border-primary/60 text-textPrimary font-bold text-xs px-3.5 py-2 rounded-full shadow-sm hover:shadow-[0_0_12px_rgba(124,255,61,0.2)] transition-all active:scale-95"
+            className="flex items-center gap-2 bg-black/30 hover:bg-primary/15 border border-primary/40 hover:border-primary text-textPrimary hover:text-primary font-medium text-xs px-3.5 py-2 rounded-full shadow-sm transition-all active:scale-95"
           >
             <Sparkles size={14} className="text-primary" />
             <span className="hidden sm:inline">Ask Yuri AI</span>
@@ -183,7 +183,7 @@ export default function Dashboard() {
 
           <div
             onClick={() => navigate('/profile')}
-            className="w-9 h-9 rounded-full bg-surfaceElevated border border-surfaceElevated flex items-center justify-center text-textPrimary font-black text-xs cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
+            className="w-9 h-9 rounded-full bg-surfaceElevated border border-surfaceElevated flex items-center justify-center text-textPrimary font-bold text-xs cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
           >
             {user?.avatar ? (
               <img src={user.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
@@ -208,24 +208,16 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-primary/10" />
         </div>
 
-        {/* Top Right Duration Badge */}
-        <div className="absolute top-5 right-5 z-20">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-textPrimary bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-md">
-            <Clock size={13} className="text-primary" />
-            <span>{duration} min</span>
-          </span>
-        </div>
-
         {/* Card Content (Tapping opens Routine Detail) */}
         <div
           onClick={() => navigate(`/routine/${workoutId}`)}
           className="relative z-10 p-6 sm:p-8 max-w-xl cursor-pointer"
         >
-          <span className="text-xs font-bold uppercase tracking-wider text-textMuted block mb-2">
-            — Today's Routine
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-textMuted/80 block mb-2">
+            TODAY'S ROUTINE
           </span>
 
-          <h2 className="text-2xl sm:text-3xl font-black text-textPrimary tracking-tight leading-tight group-hover:text-primary transition-colors">
+          <h2 className="text-2xl sm:text-3xl font-serif text-textPrimary tracking-tight leading-tight group-hover:text-primary transition-colors">
             {todayWorkout?.title || currentMeta.title}
           </h2>
 
@@ -233,18 +225,23 @@ export default function Dashboard() {
             {currentMeta.subtitle}
           </p>
 
-          {/* Action Row */}
-          <div className="pt-6">
+          {/* Action Row: Start Workout Capsule Button + Duration */}
+          <div className="pt-6 flex items-center gap-4 sm:gap-6">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/runner/${workoutId}`);
               }}
-              className="inline-flex items-center gap-2.5 bg-surfaceElevated/90 hover:bg-primary text-textPrimary hover:text-black font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full border border-surfaceElevated hover:border-primary shadow-sm hover:shadow-[0_0_15px_rgba(124,255,61,0.3)] transition-all active:scale-95"
+              className="inline-flex items-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all active:scale-[0.98] shadow-sm"
             >
               <span>Start Workout</span>
               <ArrowRight size={15} />
             </button>
+
+            <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-textMuted font-medium">
+              <Clock size={14} className="text-primary" />
+              <span>{duration} min</span>
+            </span>
           </div>
         </div>
       </div>

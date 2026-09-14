@@ -48,7 +48,7 @@ export default function RecentActivityList({ activities = [], onSelect }: Recent
           >
             {/* Left: Icon square + Name + Date / Duration */}
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-11 h-11 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0 shadow-[0_0_10px_rgba(124,255,61,0.2)]">
+              <div className="w-11 h-11 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0 shadow-sm">
                 <Calendar size={20} />
               </div>
               <div className="min-w-0">

@@ -44,7 +44,7 @@ export default function QuoteCard({
       <div className="absolute inset-0 bg-primary/5 mix-blend-color-dodge pointer-events-none" />
 
       {/* Quote Icon */}
-      <div className="relative z-10 text-primary font-serif text-4xl sm:text-5xl leading-none select-none drop-shadow-[0_0_8px_rgba(172,237,139,0.3)]">
+      <div className="relative z-10 text-primary font-serif text-4xl sm:text-5xl leading-none select-none drop-shadow-[0_0_8px_rgba(116,145,118,0.25)]">
         “
       </div>
 

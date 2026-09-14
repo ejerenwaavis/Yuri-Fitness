@@ -167,11 +167,11 @@ export default function RoutineDetail() {
           <div className="pt-2">
             <button
               onClick={() => navigate(`/runner/${workoutId}`)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-primary text-black font-black text-base px-8 py-3.5 rounded-2xl shadow-[0_0_20px_rgba(124,255,61,0.4)] hover:opacity-90 active:scale-[0.98] transition-all"
+              className="inline-flex items-center justify-center gap-2.5 bg-black/40 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium text-sm sm:text-base px-7 py-3 rounded-full transition-all active:scale-[0.98] shadow-sm"
             >
-              <Play size={20} fill="currentColor" />
+              <Play size={16} fill="currentColor" />
               <span>Start Workout</span>
-              <ArrowRight size={18} />
+              <ArrowRight size={16} />
             </button>
           </div>
         </div>
