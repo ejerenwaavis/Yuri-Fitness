@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom';
-import { Home, Dumbbell, User, Activity, Plus, Film, Sparkles } from 'lucide-react';
+import { Home, Dumbbell, User, Activity, Plus, Film, Sparkles, BookOpen } from 'lucide-react';
 import { InstallPrompt } from './components/InstallPrompt';
 
 import Dashboard from './screens/Dashboard';
@@ -11,6 +11,7 @@ import Profile from './screens/Profile';
 import Auth from './screens/Auth';
 import Onboarding from './screens/Onboarding';
 import WorkoutRunner from './screens/WorkoutRunner';
+import RoutineDetail from './screens/RoutineDetail';
 import { UnitProvider } from './context/UnitContext';
 
 // Simple Auth Context
@@ -55,7 +56,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { to: '/', icon: Home, label: t('nav.home') },
     { to: '/workouts', icon: Dumbbell, label: t('nav.workouts') },
-    { to: '/exercises', icon: Film, label: t('nav.exercises') },
+    { to: '/exercises', icon: BookOpen, label: 'Library' },
     { to: '/body', icon: Activity, label: t('nav.body') },
     { to: '/profile', icon: User, label: t('nav.profile') }
   ];
@@ -63,34 +64,41 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-background text-textPrimary overflow-hidden">
       {/* Sidebar for Desktop */}
-      <aside className="hidden lg:flex w-64 flex-col bg-surface border-r border-surfaceElevated">
-        <div className="p-6">
-          <h1 className="text-2xl font-black tracking-tighter text-primary">YURI</h1>
+      <aside className="hidden lg:flex w-64 flex-col justify-between bg-surface border-r border-surfaceElevated select-none">
+        <div>
+          <div className="p-6 pb-4">
+            <h1 className="text-2xl font-black tracking-widest text-textPrimary">YURI</h1>
+          </div>
+          <nav className="px-3 space-y-1.5">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3.5 px-4 py-3 rounded-2xl font-bold text-sm transition-all ` +
+                  (isActive
+                    ? 'bg-surfaceElevated text-primary border border-primary/30 shadow-sm'
+                    : 'text-textMuted hover:bg-surfaceElevated/50 hover:text-textPrimary')
+                }
+              >
+                <item.icon size={19} />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
         </div>
-        <nav className="flex-1 px-4 space-y-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-md transition-colors ` +
-                (isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-textMuted hover:bg-surfaceElevated hover:text-textPrimary')
-              }
-            >
-              <item.icon size={20} />
-              <span className="font-medium">{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-        <div className="p-4">
-          <NavLink
-            to="/workouts"
-            className="w-full flex items-center justify-center gap-2 bg-primary text-black font-bold py-3 rounded-md shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity"
-          >
-            <Plus size={20} /> {t('nav.logWorkout')}
-          </NavLink>
+
+        {/* Motivational Quote at bottom of sidebar */}
+        <div className="p-6 border-t border-surfaceElevated/60 space-y-3">
+          <div className="w-6 h-[2px] bg-primary/60" />
+          <p className="text-xs text-textMuted font-medium leading-relaxed">
+            Discipline builds the life you want.
+          </p>
+          <div className="pt-2">
+            <span className="text-[10px] uppercase tracking-widest font-black text-textMuted/60 block">
+              TRAIN / IMPROVE / BUILD
+            </span>
+          </div>
         </div>
       </aside>
 
@@ -181,6 +189,9 @@ export default function App() {
 
                 {/* Active Workout Runner Route */}
                 <Route path="/runner/:id" element={<WorkoutRunner />} />
+
+                {/* Routine Detail Route */}
+                <Route path="/routine/:id" element={<RoutineDetail />} />
 
                 {/* Standard Tab Routes */}
                 <Route

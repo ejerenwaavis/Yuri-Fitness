@@ -18,7 +18,8 @@ import {
   HelpCircle,
   CheckCircle2,
   Sparkles,
-  Flame,
+  Pencil,
+  ChevronLeft,
   KeyRound,
   Sliders,
   Plus
@@ -27,6 +28,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../App';
 import { useUnit } from '../context/UnitContext';
+import MembershipCard from '../components/MembershipCard';
+import { CINEMATIC_ASSETS } from '../utils/imagePipeline';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -235,86 +238,68 @@ export default function Profile() {
 
   return (
     <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-4 animate-in fade-in duration-300">
-      {/* Page Header */}
-      <div>
-        <h2 className="text-3xl font-black text-textPrimary tracking-tight">
-          {t('profile.title', 'Profile & Account')}
-        </h2>
-        <p className="text-textMuted text-sm mt-0.5">
-          {t('profile.subtitle', 'Manage your credentials, training settings, and preferences.')}
-        </p>
+      {/* Top Header Bar: Back to Home + Settings Gear */}
+      <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-1.5 -ml-1.5 rounded-full text-textMuted hover:text-textPrimary transition-colors"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <h2 className="text-xl sm:text-2xl font-black text-textPrimary tracking-tight">
+            Profile
+          </h2>
+        </div>
+
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-2 rounded-xl bg-surfaceElevated border border-surfaceElevated hover:border-primary/40 text-textMuted hover:text-textPrimary transition-all shadow-sm"
+          title="Settings & Preferences"
+        >
+          <Settings size={18} />
+        </button>
       </div>
 
-      {/* 1. User Summary Card */}
+      {/* 1. User Summary Card (Green rim-lit avatar, admin/pro badge, edit button) */}
       <div className="bg-surface p-5 rounded-2xl border border-surfaceElevated flex items-center justify-between shadow-lg">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3.5 sm:gap-4">
           {user?.avatar ? (
             <img
               src={user.avatar}
               alt="Profile"
-              className="w-16 h-16 rounded-2xl border-2 border-primary/30 object-cover shadow-md"
+              className="w-14 h-14 rounded-2xl border-2 border-primary/50 object-cover shadow-[0_0_12px_rgba(124,255,61,0.2)]"
             />
           ) : (
-            <div className="w-16 h-16 rounded-2xl bg-surfaceElevated border border-surfaceElevated flex items-center justify-center text-primary shadow-md">
-              <UserIcon size={32} />
+            <div className="w-14 h-14 rounded-2xl bg-surfaceElevated border-2 border-primary/40 flex items-center justify-center text-primary shadow-[0_0_12px_rgba(124,255,61,0.2)]">
+              <UserIcon size={26} />
             </div>
           )}
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-black text-textPrimary">{user?.name || 'Athlete'}</h3>
-              <span
-                className={`text-xs uppercase font-black px-2.5 py-0.5 rounded-full border ${
-                  user?.role === 'admin'
-                    ? 'bg-primary/20 text-primary border-primary/50'
-                    : 'bg-surfaceElevated text-textMuted border-surfaceElevated'
-                }`}
-              >
-                {user?.role === 'admin' ? t('profile.adminBadge') : t('profile.userBadge')}
+              <h3 className="text-lg sm:text-xl font-black text-textPrimary">{user?.name || 'Avis Ejerenwa'}</h3>
+              <span className="text-[10px] sm:text-xs uppercase font-black px-2.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/40">
+                {user?.role === 'admin' ? 'ADMIN' : isPro ? 'PRO' : 'MEMBER'}
               </span>
             </div>
-            <p className="text-textMuted text-sm mt-0.5">{user?.email || 'user@yurifitness.com'}</p>
+            <p className="text-textMuted text-xs sm:text-sm mt-0.5">{user?.email || 'ejerenwaavis@gmail.com'}</p>
           </div>
         </div>
 
         <button
           onClick={() => setIsAccountOpen(true)}
-          className="text-sm font-bold text-primary bg-primary/10 border border-primary/30 hover:bg-primary/20 px-3.5 py-1.5 rounded-xl transition-all"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-textPrimary bg-surfaceElevated hover:bg-primary/20 border border-surfaceElevated hover:border-primary/40 px-3.5 py-1.5 rounded-xl transition-all shadow-sm"
         >
-          Edit
+          <Pencil size={13} className="text-primary" />
+          <span>Edit</span>
         </button>
       </div>
 
       {/* 2. Membership & Subscription Card */}
-      <div className="bg-surface p-5 rounded-2xl border border-primary/30 relative overflow-hidden shadow-lg">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2.5">
-            <CreditCard className="text-primary" size={22} />
-            <h3 className="text-lg font-black text-textPrimary">
-              {t('profile.subscriptionTitle', 'Membership Plan')}
-            </h3>
-          </div>
-          <span
-            className={`text-xs font-black uppercase px-3 py-1 rounded-full ${
-              isPro
-                ? 'bg-primary text-black'
-                : 'bg-surfaceElevated text-textMuted border border-surfaceElevated'
-            }`}
-          >
-            {isPro ? 'Pro Active' : 'Free Tier'}
-          </span>
-        </div>
-        <p className="text-textMuted text-sm mb-4 leading-normal">
-          {isPro
-            ? 'You have unlimited access to Yuri AI mutations, custom workouts, and progress charts.'
-            : t('profile.subscriptionDesc', 'Upgrade to Yuri Pro for unlimited AI adaptations and workouts.')}
-        </p>
-        <button
-          onClick={handleSubscribe}
-          className="w-full sm:w-auto bg-primary text-black px-6 py-2.5 rounded-xl font-black text-sm hover:opacity-95 transition-all shadow-[0_0_15px_rgba(124,255,61,0.25)]"
-        >
-          {isPro ? t('profile.manageSubscription') : t('profile.upgradeToPro', 'Upgrade to Pro')}
-        </button>
-      </div>
+      <MembershipCard
+        subscriptionStatus={user?.subscriptionStatus || 'free'}
+        onUpgrade={handleSubscribe}
+      />
 
       {/* 3. Structured Categories Section */}
       <div className="space-y-3">

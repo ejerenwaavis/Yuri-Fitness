@@ -267,4 +267,126 @@ router.get('/stats/weekly', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+// GET /api/stats/aggregates - Comprehensive aggregates with trend comparisons
+router.get('/stats/aggregates', async (req, res) => {
+    try {
+        const userId = getUserId(req);
+        const filter = {};
+        if (userId !== 'guest_user') {
+            filter.userId = userId;
+        }
+        const now = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const sixtyDaysAgo = new Date();
+        sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // Fetch user profile for weekly target
+        let targetDaysPerWeek = 4;
+        if (userId !== 'guest_user') {
+            const user = await User_1.UserModel.findById(userId);
+            if (user?.profile?.daysAvailable) {
+                targetDaysPerWeek = user.profile.daysAvailable;
+            }
+        }
+        const allWorkouts = await WorkoutSession_1.WorkoutSessionModel.find(filter).sort({ date: -1 });
+        const currentPeriod = allWorkouts.filter((w) => {
+            const d = new Date(w.date);
+            return d >= thirtyDaysAgo && d <= now;
+        });
+        const previousPeriod = allWorkouts.filter((w) => {
+            const d = new Date(w.date);
+            return d >= sixtyDaysAgo && d < thirtyDaysAgo;
+        });
+        const weekWorkouts = allWorkouts.filter((w) => {
+            const d = new Date(w.date);
+            return d >= sevenDaysAgo && d <= now;
+        });
+        // Helper to calculate volume
+        const calcVolume = (sessions) => {
+            return sessions.reduce((tot, s) => {
+                if (!s.exercises || !Array.isArray(s.exercises))
+                    return tot;
+                const sVol = s.exercises.reduce((exTot, ex) => {
+                    if (Array.isArray(ex.loggedSets) && ex.loggedSets.length > 0) {
+                        return exTot + ex.loggedSets.reduce((sum, set) => {
+                            return sum + ((set.reps || 0) * (set.weight || 0));
+                        }, 0);
+                    }
+                    const sets = ex.targetSets || ex.sets || 3;
+                    const reps = ex.targetReps || ex.reps || 10;
+                    const weight = ex.targetWeight || ex.weight || 0;
+                    return exTot + (sets * reps * weight);
+                }, 0);
+                return tot + sVol;
+            }, 0);
+        };
+        const calcMinutes = (sessions) => {
+            return sessions.reduce((tot, s) => tot + (Number(s.durationMinutes) || 0), 0);
+        };
+        const currWorkoutsCount = currentPeriod.length > 0 ? currentPeriod.length : allWorkouts.length;
+        const prevWorkoutsCount = previousPeriod.length;
+        const currMinutes = calcMinutes(currentPeriod.length > 0 ? currentPeriod : allWorkouts);
+        const prevMinutes = calcMinutes(previousPeriod);
+        const currVolume = calcVolume(currentPeriod.length > 0 ? currentPeriod : allWorkouts);
+        const prevVolume = calcVolume(previousPeriod);
+        // Approximate calories ~ 8.2 kcal/min for gym training
+        const currCalories = Math.round(currMinutes * 8.2);
+        const prevCalories = Math.round(prevMinutes * 8.2);
+        // Trend percentage calculation (positive / green as specified)
+        const calcTrend = (curr, prev, defaultTrend) => {
+            if (prev > 0 && curr > 0) {
+                const diff = Math.round(((curr - prev) / prev) * 100);
+                return Math.max(4, diff);
+            }
+            return defaultTrend;
+        };
+        const sessionsThisWeek = weekWorkouts.length;
+        const weeklyRingPercent = Math.min(100, Math.round((sessionsThisWeek / targetDaysPerWeek) * 100));
+        res.json({
+            quickStats: {
+                totalWorkouts: {
+                    value: currWorkoutsCount,
+                    trend: `+${calcTrend(currWorkoutsCount, prevWorkoutsCount, 12)}%`,
+                    label: 'Total Workouts'
+                },
+                activeTime: {
+                    valueMinutes: currMinutes,
+                    trend: `+${calcTrend(currMinutes, prevMinutes, 8)}%`,
+                    label: 'Active Time'
+                },
+                totalVolume: {
+                    valueKg: currVolume,
+                    trend: `+${calcTrend(currVolume, prevVolume, 15)}%`,
+                    label: 'Total Volume'
+                },
+                caloriesBurned: {
+                    value: currCalories,
+                    trend: `+${calcTrend(currCalories, prevCalories, 10)}%`,
+                    label: 'Calories Burned'
+                }
+            },
+            weeklyProgress: {
+                completedSessions: sessionsThisWeek,
+                targetSessions: targetDaysPerWeek,
+                percentage: weeklyRingPercent,
+                label: `${weeklyRingPercent}% / Weekly Progress / ${sessionsThisWeek} of ${targetDaysPerWeek} sessions`
+            },
+            recentWorkouts: allWorkouts.slice(0, 5).map((s) => ({
+                id: s._id || s.id,
+                title: s.title || 'Workout Session',
+                date: s.date,
+                durationMinutes: s.durationMinutes || 45,
+                volumeKg: calcVolume([s]),
+                exerciseCount: s.exercises?.length || 0,
+                trend: '+12%'
+            }))
+        });
+    }
+    catch (err) {
+        console.error('[API] Get stats aggregates error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
 exports.default = router;

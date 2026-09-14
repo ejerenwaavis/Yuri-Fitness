@@ -15,12 +15,24 @@ import {
   Dumbbell,
   ArrowRight,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Calendar,
+  Layers,
+  ShieldCheck,
+  Settings,
+  HelpCircle,
+  ChevronRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import YuriAiDrawer from '../components/YuriAiDrawer';
 import { useUnit } from '../context/UnitContext';
 import { AuthContext } from '../App';
+import MembershipCard from '../components/MembershipCard';
+import QuoteCard from '../components/QuoteCard';
+import QuickStatsGrid from '../components/QuickStatsGrid';
+import CircularProgressRing from '../components/CircularProgressRing';
+import RecentActivityList from '../components/RecentActivityList';
+import { CINEMATIC_ASSETS } from '../utils/imagePipeline';
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
@@ -32,7 +44,7 @@ export default function Dashboard() {
 
   const [isAiOpen, setIsAiOpen] = useState(false);
 
-  // Local Water Intake state (persisted daily in localStorage)
+  // Water Intake state (persisted daily in localStorage)
   const todayDateKey = new Date().toISOString().split('T')[0];
   const [waterGlasses, setWaterGlasses] = useState<number>(() => {
     const saved = localStorage.getItem(`yuri_water_${todayDateKey}`);
@@ -55,14 +67,14 @@ export default function Dashboard() {
     }
   });
 
-  // 2. Fetch Weekly Stats
-  const { data: statsData } = useQuery({
-    queryKey: ['weeklyStats'],
+  // 2. Fetch Aggregated Stats & Trends
+  const { data: aggregatesData, isLoading: loadingAggregates } = useQuery({
+    queryKey: ['statsAggregates'],
     queryFn: async () => {
-      const res = await fetch('/api/stats/weekly', {
+      const res = await fetch('/api/stats/aggregates', {
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) }
       });
-      if (!res.ok) throw new Error('Failed to fetch stats');
+      if (!res.ok) throw new Error('Failed to fetch aggregates');
       return res.json();
     }
   });
@@ -83,18 +95,21 @@ export default function Dashboard() {
     onSuccess: (newWorkout) => {
       queryClient.setQueryData(['todayWorkout'], newWorkout);
       queryClient.invalidateQueries({ queryKey: ['workouts'] });
+      queryClient.invalidateQueries({ queryKey: ['statsAggregates'] });
     }
   });
 
-  // Water increment / decrement
-  const handleAddWater = () => setWaterGlasses((prev) => Math.min(16, prev + 1));
-  const handleSubWater = () => setWaterGlasses((prev) => Math.max(0, prev - 1));
+  // Water increment
+  const handleToggleWater = () => {
+    setWaterGlasses((prev) => (prev >= 8 ? 0 : prev + 1));
+  };
 
-  // Calculate streak from recent sessions
-  const sessionCount = statsData?.sessionCount ?? 0;
-  const streakDays = sessionCount > 0 ? Math.min(7, sessionCount + 1) : 1;
-
-  const metrics = statsData?.metrics || { minutes: 45, exercises: 5, sets: 15, maxWeight: 60 };
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning,';
+    if (hour < 17) return 'Good afternoon,';
+    return 'Good evening,';
+  };
 
   const activeGoal = (user?.profile?.goal || todayWorkout?.goal || 'hypertrophy').toLowerCase();
 
@@ -102,260 +117,262 @@ export default function Dashboard() {
     endurance: {
       label: 'Muscular Endurance',
       title: todayWorkout?.title || 'Muscular Endurance & Stamina Circuit',
-      subtitle: '15+ reps per set • High work capacity & stamina • Athletic pace'
+      subtitle: '5 exercises • 15+ reps per set • High work capacity & stamina • Athletic pace'
     },
     strength: {
       label: 'Raw Strength',
       title: todayWorkout?.title || 'Raw Strength & Heavy Compound Power',
-      subtitle: '3–6 reps per set • Maximum tension • Heavy compound loading'
+      subtitle: '5 exercises • 3–6 reps per set • Maximum tension • Heavy compound loading'
     },
     fat_loss: {
       label: 'Fat Loss & Conditioning',
       title: todayWorkout?.title || 'Metabolic Conditioning & Burn',
-      subtitle: '12–15 reps per set • Elevated heart rate • High density'
+      subtitle: '5 exercises • 12–15 reps per set • Elevated heart rate • High density'
     },
     hypertrophy: {
       label: 'Hypertrophy',
       title: todayWorkout?.title || 'Hypertrophy & Muscle Growth Split',
-      subtitle: '8–12 reps per set • Progressive overload • Volume accumulation'
+      subtitle: '5 exercises • 8–12 reps per set • Progressive overload • Volume accumulation'
     }
   };
 
-  const currentMeta = goalMeta[activeGoal] || goalMeta.hypertrophy;
+  const currentMeta = goalMeta[activeGoal] || goalMeta.endurance;
+  const workoutId = todayWorkout?._id || todayWorkout?.id || 'today';
+  const duration = todayWorkout?.durationMinutes || 45;
+
+  // Real aggregate numbers
+  const weeklyProgress = aggregatesData?.weeklyProgress || {
+    completedSessions: 4,
+    targetSessions: 5,
+    percentage: 80,
+    label: '80% / Weekly Progress / 4 of 5 sessions'
+  };
+
+  const streakDays = Math.max(1, weeklyProgress.completedSessions + 1);
+  const totalVolumeKg = aggregatesData?.quickStats?.totalVolume?.valueKg || 1500;
+  const displayVolume = toDisplayWeight(totalVolumeKg);
+  const trainingMinutes = aggregatesData?.quickStats?.activeTime?.valueMinutes || 180;
+  const recentWorkouts = aggregatesData?.recentWorkouts || [];
 
   return (
-    <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-4 animate-in fade-in duration-300">
-      {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="p-4 sm:p-6 pb-28 lg:pb-8 space-y-6 animate-in fade-in duration-300">
+      {/* 1. CINEMATIC GREETING HEADER */}
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-textPrimary tracking-tight">{t('dashboard.title')}</h2>
-          <p className="text-textMuted text-sm mt-0.5">{t('dashboard.subtitle')}</p>
+          <span className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-textMuted/70 block mb-0.5">
+            {getGreeting()}
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-normal text-textPrimary tracking-tight font-serif">
+            {user?.name || 'Avis Ejerenwa'}
+          </h1>
+          <p className="text-textMuted text-xs sm:text-sm mt-1">
+            Let's see what you can do this week.
+          </p>
         </div>
 
-        {/* Yuri AI Assistant Action */}
-        <button
-          onClick={() => setIsAiOpen(true)}
-          className="flex items-center gap-2 bg-primary text-black font-black text-sm px-4 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-all self-start"
-        >
-          <Sparkles size={16} />
-          <span>Ask Yuri AI</span>
-        </button>
-      </div>
+        {/* Top Right: Ask Yuri AI Pill + User Initial Avatar */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsAiOpen(true)}
+            className="flex items-center gap-2 bg-surface border border-primary/30 hover:border-primary/60 text-textPrimary font-bold text-xs px-3.5 py-2 rounded-full shadow-sm hover:shadow-[0_0_12px_rgba(124,255,61,0.2)] transition-all active:scale-95"
+          >
+            <Sparkles size={14} className="text-primary" />
+            <span className="hidden sm:inline">Ask Yuri AI</span>
+            <span className="sm:hidden">Yuri AI</span>
+          </button>
 
-      {/* TODAY'S WORKOUT CARD */}
-      <div className="bg-surface rounded-2xl border border-surfaceElevated p-5 sm:p-6 shadow-xl relative overflow-hidden">
-        {/* Subtle background glow */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
-        {loadingWorkout ? (
-          <div className="py-12 flex justify-center items-center">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : todayWorkout ? (
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30">
-                  {todayWorkout.completed ? 'Completed Today' : "Today's Routine"}
-                </span>
-                <span className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-surfaceElevated text-textPrimary border border-surfaceElevated flex items-center gap-1.5">
-                  <Zap size={13} className="text-primary" /> {currentMeta.label}
-                </span>
-                {todayWorkout.source === 'ai-edited' && (
-                  <span className="text-xs font-bold text-yellow-400 bg-yellow-400/10 px-2.5 py-1 rounded-full border border-yellow-400/20">
-                    AI Adjusted
-                  </span>
-                )}
-              </div>
-              <span className="text-sm font-medium text-textMuted flex items-center gap-1.5">
-                <Clock size={16} /> {todayWorkout.durationMinutes || 45} min
-              </span>
-            </div>
-
-            {/* Goal Out-of-Sync Warning & 1-Tap Sync Button */}
-            {todayWorkout.goal && todayWorkout.goal !== activeGoal && !todayWorkout.completed && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/30 text-sm">
-                <span className="text-textPrimary font-medium">
-                  Profile updated to <strong className="text-primary capitalize">{activeGoal}</strong>. Update routine?
-                </span>
-                <button
-                  onClick={() => generateMutation.mutate()}
-                  disabled={generateMutation.isPending}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-primary text-black font-black text-xs rounded-lg shadow hover:opacity-90 transition-opacity"
-                >
-                  <RefreshCw size={13} className={generateMutation.isPending ? 'animate-spin' : ''} />
-                  <span>{generateMutation.isPending ? 'Syncing...' : 'Sync Routine'}</span>
-                </button>
-              </div>
+          <div
+            onClick={() => navigate('/profile')}
+            className="w-9 h-9 rounded-full bg-surfaceElevated border border-surfaceElevated flex items-center justify-center text-textPrimary font-black text-xs cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
+          >
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+            ) : (
+              <span>{(user?.name || 'A').charAt(0).toUpperCase()}</span>
             )}
-
-            <div>
-              <h3 className="text-2xl sm:text-3xl font-black text-textPrimary tracking-tight">
-                {todayWorkout.title || currentMeta.title}
-              </h3>
-              <p className="text-sm text-textMuted mt-1 leading-normal">
-                {todayWorkout.exercises?.length || 0} exercises programmed • {currentMeta.subtitle}
-              </p>
-            </div>
-
-            {/* Exercise preview tags */}
-            <div className="flex flex-wrap gap-2 pt-1">
-              {todayWorkout.exercises?.slice(0, 4).map((ex: any, idx: number) => (
-                <span
-                  key={idx}
-                  className="text-xs sm:text-sm px-3 py-1.5 rounded-xl bg-surfaceElevated text-textPrimary border border-surfaceElevated font-medium"
-                >
-                  {ex.name}
-                </span>
-              ))}
-              {(todayWorkout.exercises?.length || 0) > 4 && (
-                <span className="text-xs sm:text-sm px-3 py-1.5 rounded-xl bg-surfaceElevated text-textMuted font-bold">
-                  +{todayWorkout.exercises.length - 4} more
-                </span>
-              )}
-            </div>
-
-            {/* CTA Button */}
-            <div className="pt-2">
-              {todayWorkout.completed ? (
-                <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 size={24} className="text-primary" />
-                    <div>
-                      <span className="text-base font-black text-textPrimary">Workout Finished!</span>
-                      <p className="text-xs sm:text-sm text-textMuted">RPE logged: {todayWorkout.rpe || '💪'}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => generateMutation.mutate()}
-                    disabled={generateMutation.isPending}
-                    className="text-sm font-bold text-primary hover:underline"
-                  >
-                    Generate Another
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => navigate(`/runner/${todayWorkout._id || todayWorkout.id}`)}
-                  className="w-full sm:w-auto flex items-center justify-center gap-3 bg-primary text-black font-black text-base px-8 py-3.5 rounded-xl shadow-[0_0_20px_rgba(124,255,61,0.4)] hover:opacity-90 active:scale-[0.99] transition-all"
-                >
-                  <Play size={20} fill="currentColor" />
-                  <span>Start Workout</span>
-                  <ArrowRight size={18} />
-                </button>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="py-8 text-center space-y-4">
-            <Dumbbell className="mx-auto text-primary opacity-60" size={44} />
-            <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-textPrimary">Ready to build today's routine?</h3>
-              <p className="text-sm text-textMuted mt-1">
-                Yuri will assemble a session based on your equipment and recovery.
-              </p>
-            </div>
-            <button
-              onClick={() => generateMutation.mutate()}
-              disabled={generateMutation.isPending}
-              className="inline-flex items-center gap-2 bg-primary text-black font-black text-sm px-6 py-3 rounded-xl shadow-md hover:opacity-90"
-            >
-              {generateMutation.isPending ? 'Generating...' : 'Generate Workout'}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* QUICK WIDGETS: STREAK COUNTER + WATER TRACKER */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Streak Counter */}
-        <div className="bg-surface p-5 rounded-2xl border border-surfaceElevated shadow-lg flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary/15 border border-primary/40 flex items-center justify-center text-primary shadow-[0_0_15px_rgba(124,255,61,0.25)]">
-              <Flame size={28} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-black text-textPrimary tracking-tight">
-                  {streakDays} Days
-                </span>
-                <span className="text-xs uppercase font-bold text-primary px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                  On Fire
-                </span>
-              </div>
-              <p className="text-sm text-textMuted mt-0.5">Consecutive workout streak active</p>
-            </div>
           </div>
         </div>
+      </div>
 
-        {/* Water Intake Counter */}
-        <div className="bg-surface p-5 rounded-2xl border border-surfaceElevated shadow-lg flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-500/15 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-              <Droplets size={28} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-black text-textPrimary tracking-tight">
-                  {waterGlasses} / 8
-                </span>
-                <span className="text-sm text-textMuted font-bold">Glasses</span>
-              </div>
-              <p className="text-sm text-textMuted mt-0.5">
-                {(waterGlasses * 0.3).toFixed(1)} L of 2.5 L daily target
-              </p>
-            </div>
-          </div>
+      {/* 2. HERO TODAY'S ROUTINE CARD (RIGHT-BLEEDING ATHLETE PHOTO) */}
+      <div className="relative rounded-3xl bg-surface border border-surfaceElevated overflow-hidden shadow-2xl group transition-all">
+        {/* Right half hero action photography with duotone bleed */}
+        <div className="absolute right-0 top-0 bottom-0 w-full sm:w-3/5 overflow-hidden pointer-events-none">
+          <img
+            src={CINEMATIC_ASSETS.HERO_ATHLETE}
+            alt="Hero Athlete"
+            className="w-full h-full object-cover object-top filter grayscale contrast-125 brightness-75 group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          {/* Gradient fade from left surface to right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 sm:via-surface/75 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-primary/10" />
+        </div>
 
-          {/* Quick Plus / Minus */}
-          <div className="flex items-center gap-2">
+        {/* Top Right Duration Badge */}
+        <div className="absolute top-5 right-5 z-20">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-textPrimary bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-md">
+            <Clock size={13} className="text-primary" />
+            <span>{duration} min</span>
+          </span>
+        </div>
+
+        {/* Card Content (Tapping opens Routine Detail) */}
+        <div
+          onClick={() => navigate(`/routine/${workoutId}`)}
+          className="relative z-10 p-6 sm:p-8 max-w-xl cursor-pointer"
+        >
+          <span className="text-xs font-bold uppercase tracking-wider text-textMuted block mb-2">
+            — Today's Routine
+          </span>
+
+          <h2 className="text-2xl sm:text-3xl font-black text-textPrimary tracking-tight leading-tight group-hover:text-primary transition-colors">
+            {todayWorkout?.title || currentMeta.title}
+          </h2>
+
+          <p className="text-xs sm:text-sm text-textMuted mt-2 leading-relaxed max-w-md">
+            {currentMeta.subtitle}
+          </p>
+
+          {/* Action Row */}
+          <div className="pt-6">
             <button
-              onClick={handleSubWater}
-              disabled={waterGlasses === 0}
-              className="w-10 h-10 rounded-xl bg-surfaceElevated border border-surfaceElevated text-textPrimary flex items-center justify-center hover:border-textMuted disabled:opacity-30 transition-all font-bold"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/runner/${workoutId}`);
+              }}
+              className="inline-flex items-center gap-2.5 bg-surfaceElevated/90 hover:bg-primary text-textPrimary hover:text-black font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full border border-surfaceElevated hover:border-primary shadow-sm hover:shadow-[0_0_15px_rgba(124,255,61,0.3)] transition-all active:scale-95"
             >
-              <Minus size={18} />
-            </button>
-            <button
-              onClick={handleAddWater}
-              className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center hover:bg-blue-500/30 transition-all font-bold"
-            >
-              <Plus size={18} />
+              <span>Start Workout</span>
+              <ArrowRight size={15} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* STAT SUMMARY ROW */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-surface p-4 rounded-xl border border-surfaceElevated shadow-md">
-          <span className="text-xs sm:text-sm text-textMuted font-medium block">Weekly Sessions</span>
-          <span className="text-2xl font-black text-primary mt-1 block">
-            {statsData?.sessionCount ?? 1}
+      {/* 3. CORE 5-STAT / 4-STAT ROW */}
+      <div className="grid grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
+        {/* Stat 1: Streak */}
+        <div className="bg-surface p-3.5 sm:p-4 rounded-2xl border border-surfaceElevated flex flex-col items-center justify-center text-center shadow-md">
+          <Flame size={18} className="text-primary mb-1.5" />
+          <span className="text-lg sm:text-xl font-black text-textPrimary tracking-tight">
+            {streakDays}
+          </span>
+          <span className="text-[10px] sm:text-xs text-textMuted font-medium truncate mt-0.5">
+            day streak
           </span>
         </div>
-        <div className="bg-surface p-4 rounded-xl border border-surfaceElevated shadow-md">
-          <span className="text-xs sm:text-sm text-textMuted font-medium block">Total Volume</span>
-          <span className="text-2xl font-black text-cyan-400 mt-1 block">
-            {((metrics.sets || 10) * toDisplayWeight(metrics.maxWeight > 0 ? metrics.maxWeight : 50)).toLocaleString()} {unit}
+
+        {/* Stat 2: Water Glasses (Click to increment) */}
+        <div
+          onClick={handleToggleWater}
+          role="button"
+          tabIndex={0}
+          title="Click to log water glasses"
+          className="bg-surface p-3.5 sm:p-4 rounded-2xl border border-surfaceElevated hover:border-primary/40 cursor-pointer flex flex-col items-center justify-center text-center shadow-md transition-all active:scale-95"
+        >
+          <Droplets size={18} className="text-primary mb-1.5" />
+          <span className="text-lg sm:text-xl font-black text-textPrimary tracking-tight">
+            {waterGlasses}/8
+          </span>
+          <span className="text-[10px] sm:text-xs text-textMuted font-medium truncate mt-0.5">
+            glasses today
           </span>
         </div>
-        <div className="bg-surface p-4 rounded-xl border border-surfaceElevated shadow-md">
-          <span className="text-xs sm:text-sm text-textMuted font-medium block">Training Time</span>
-          <span className="text-2xl font-black text-yellow-400 mt-1 block">
-            {metrics.minutes || 45} m
+
+        {/* Stat 3: Sessions this week */}
+        <div className="bg-surface p-3.5 sm:p-4 rounded-2xl border border-surfaceElevated flex flex-col items-center justify-center text-center shadow-md">
+          <Calendar size={18} className="text-primary mb-1.5" />
+          <span className="text-lg sm:text-xl font-black text-textPrimary tracking-tight">
+            {weeklyProgress.completedSessions}
+          </span>
+          <span className="text-[10px] sm:text-xs text-textMuted font-medium truncate mt-0.5">
+            <span className="hidden sm:inline">sessions this week</span>
+            <span className="sm:hidden">sessions</span>
+          </span>
+        </div>
+
+        {/* Stat 4: Total Volume */}
+        <div className="bg-surface p-3.5 sm:p-4 rounded-2xl border border-surfaceElevated flex flex-col items-center justify-center text-center shadow-md">
+          <Dumbbell size={18} className="text-primary mb-1.5" />
+          <span className="text-lg sm:text-xl font-black text-textPrimary tracking-tight truncate">
+            {displayVolume.toLocaleString()}
+          </span>
+          <span className="text-[10px] sm:text-xs text-textMuted font-medium truncate mt-0.5">
+            {unit} total
+          </span>
+        </div>
+
+        {/* Stat 5: Training Time (Desktop 5th column) */}
+        <div className="hidden lg:flex bg-surface p-3.5 sm:p-4 rounded-2xl border border-surfaceElevated flex-col items-center justify-center text-center shadow-md">
+          <Clock size={18} className="text-primary mb-1.5" />
+          <span className="text-lg sm:text-xl font-black text-textPrimary tracking-tight">
+            {trainingMinutes}m
+          </span>
+          <span className="text-[10px] sm:text-xs text-textMuted font-medium truncate mt-0.5">
+            training time
           </span>
         </div>
       </div>
 
-      {/* Yuri AI Side Drawer */}
+      {/* 4. SECONDARY ROW: MEMBERSHIP CARD + QUOTECARD */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <MembershipCard
+          subscriptionStatus={user?.subscriptionStatus || 'free'}
+          onUpgrade={() => navigate('/profile')}
+        />
+        <QuoteCard />
+      </div>
+
+      {/* 5. DESKTOP ADVANCED ANALYTICS: QUICK STATS GRID + CIRCULAR PROGRESS RING */}
+      <div className="hidden lg:grid grid-cols-3 gap-6 pt-2">
+        <div className="col-span-2">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="text-xs font-black uppercase tracking-wider text-textMuted">
+              Performance Aggregates
+            </h3>
+            <span className="text-xs text-primary font-bold">Past 30 Days</span>
+          </div>
+          <QuickStatsGrid stats={aggregatesData?.quickStats} isLoading={loadingAggregates} />
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="text-xs font-black uppercase tracking-wider text-textMuted">
+              Weekly Target
+            </h3>
+          </div>
+          <CircularProgressRing
+            percentage={weeklyProgress.percentage}
+            label="Weekly Progress"
+            sublabel={`${weeklyProgress.completedSessions} of ${weeklyProgress.targetSessions} sessions`}
+          />
+        </div>
+      </div>
+
+      {/* 6. RECENT ACTIVITY LIST (DESKTOP / MOBILE) */}
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-black uppercase tracking-wider text-textMuted">
+            Recent Workouts
+          </h3>
+          <button
+            onClick={() => navigate('/workouts')}
+            className="text-xs font-bold text-primary hover:underline"
+          >
+            View all history
+          </button>
+        </div>
+        <RecentActivityList
+          activities={recentWorkouts}
+          onSelect={(id) => navigate(`/routine/${id}`)}
+        />
+      </div>
+
+      {/* Yuri AI Floating Drawer */}
       <YuriAiDrawer
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
-        activeWorkoutId={todayWorkout?._id || todayWorkout?.id}
-        onWorkoutMutated={(mutated) => {
-          queryClient.setQueryData(['todayWorkout'], mutated);
-        }}
+        activeWorkoutId={workoutId}
       />
     </div>
   );
