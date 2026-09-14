@@ -103,13 +103,13 @@ export default function Auth() {
         </div>
 
         {/* Mode Switcher Tabs */}
-        <div className="flex bg-surfaceElevated p-1 rounded-xl border border-surfaceElevated">
+        <div className="flex bg-surfaceElevated p-1 rounded-full border border-surfaceElevated">
           <button
             type="button"
             onClick={() => { setMode('login'); setError(''); }}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all ${
               mode === 'login'
-                ? 'bg-primary text-black shadow-md'
+                ? 'bg-primary text-black shadow-sm'
                 : 'text-textMuted hover:text-textPrimary'
             }`}
           >
@@ -118,9 +118,9 @@ export default function Auth() {
           <button
             type="button"
             onClick={() => { setMode('signup'); setError(''); }}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-bold rounded-full transition-all ${
               mode === 'signup'
-                ? 'bg-primary text-black shadow-md'
+                ? 'bg-primary text-black shadow-sm'
                 : 'text-textMuted hover:text-textPrimary'
             }`}
           >
@@ -214,10 +214,10 @@ export default function Auth() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-primary text-black font-bold py-3 rounded-xl shadow-[0_0_18px_rgba(124,255,61,0.3)] hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2 mt-2"
+            className="w-full inline-flex items-center justify-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium py-3 rounded-full shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 mt-2 text-sm"
           >
             {isLoading ? (
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             ) : (
               <span>{mode === 'signup' ? t('auth.createAccount') : t('auth.login')}</span>
             )}

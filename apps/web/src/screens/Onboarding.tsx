@@ -263,13 +263,13 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <div className="flex items-center gap-2">
             <span>Yuri Intake</span>
             <span className="text-surfaceElevated">•</span>
-            <div className="inline-flex items-center bg-surfaceElevated rounded-md p-0.5 border border-surfaceElevated text-[9px] font-bold">
+            <div className="inline-flex items-center bg-surfaceElevated rounded-full p-0.5 border border-surfaceElevated text-[9px] font-bold">
               <button
                 type="button"
                 onClick={() => handleUnitChange('kg')}
-                className={`px-1.5 py-0.5 rounded transition-all ${
+                className={`px-2 py-0.5 rounded-full transition-all ${
                   unitSystem === 'kg'
-                    ? 'bg-primary text-black font-black shadow-xs'
+                    ? 'bg-primary text-black font-bold shadow-xs'
                     : 'text-textMuted hover:text-textPrimary'
                 }`}
               >
@@ -278,9 +278,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               <button
                 type="button"
                 onClick={() => handleUnitChange('lbs')}
-                className={`px-1.5 py-0.5 rounded transition-all ${
+                className={`px-2 py-0.5 rounded-full transition-all ${
                   unitSystem === 'lbs'
-                    ? 'bg-primary text-black font-black shadow-xs'
+                    ? 'bg-primary text-black font-bold shadow-xs'
                     : 'text-textMuted hover:text-textPrimary'
                 }`}
               >
@@ -387,14 +387,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             </div>
 
             {/* Gym vs Home Segmented Toggle */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-surfaceElevated/60 rounded-xl border border-surfaceElevated">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-surfaceElevated/60 rounded-full border border-surfaceElevated">
               <button
                 type="button"
                 onClick={() => {
                   setEnvironment('gym');
                   setEquipment(['barbell', 'dumbbell', 'cables', 'machine']);
                 }}
-                className={`py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${
+                className={`py-2.5 px-4 rounded-full text-xs sm:text-sm font-bold transition-all ${
                   environment === 'gym'
                     ? 'bg-primary text-black shadow-sm'
                     : 'text-textMuted hover:text-textPrimary'
@@ -408,7 +408,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   setEnvironment('home');
                   setEquipment(['dumbbell', 'bodyweight', 'resistance_bands']);
                 }}
-                className={`py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${
+                className={`py-2.5 px-4 rounded-full text-xs sm:text-sm font-bold transition-all ${
                   environment === 'home'
                     ? 'bg-primary text-black shadow-sm'
                     : 'text-textMuted hover:text-textPrimary'
@@ -553,13 +553,13 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <span>Units & Body Stats</span>
                 </label>
                 {/* Metric / Imperial Segmented Pill */}
-                <div className="flex items-center p-0.5 bg-surface rounded-lg border border-surfaceElevated text-xs font-bold">
+                <div className="flex items-center p-0.5 bg-surface rounded-full border border-surfaceElevated text-xs font-bold">
                   <button
                     type="button"
                     onClick={() => handleUnitChange('kg')}
-                    className={`px-3 py-1 rounded-md transition-all ${
+                    className={`px-3 py-1 rounded-full transition-all ${
                       unitSystem === 'kg'
-                        ? 'bg-primary text-black font-black shadow-xs'
+                        ? 'bg-primary text-black font-bold shadow-xs'
                         : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
@@ -568,9 +568,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <button
                     type="button"
                     onClick={() => handleUnitChange('lbs')}
-                    className={`px-3 py-1 rounded-md transition-all ${
+                    className={`px-3 py-1 rounded-full transition-all ${
                       unitSystem === 'lbs'
-                        ? 'bg-primary text-black font-black shadow-xs'
+                        ? 'bg-primary text-black font-bold shadow-xs'
                         : 'text-textMuted hover:text-textPrimary'
                     }`}
                   >
@@ -756,9 +756,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <button
             type="button"
             onClick={() => setStep((s) => s - 1)}
-            className="flex items-center gap-1.5 text-textMuted hover:text-textPrimary text-sm font-bold px-4 py-2.5 rounded-xl bg-surfaceElevated transition-colors"
+            className="flex items-center gap-1.5 text-textMuted hover:text-textPrimary text-sm font-medium px-5 py-2.5 rounded-full bg-surfaceElevated/80 border border-surfaceElevated transition-all active:scale-95"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
             <span>Back</span>
           </button>
         ) : (
@@ -769,23 +769,23 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <button
             type="button"
             onClick={() => setStep((s) => s + 1)}
-            className="flex items-center gap-2 bg-primary text-black font-black text-sm px-6 py-2.5 rounded-xl shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-all ml-auto"
+            className="inline-flex items-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium text-sm px-6 py-2.5 rounded-full transition-all active:scale-[0.98] shadow-sm ml-auto"
           >
             <span>Continue</span>
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         ) : (
           <button
             type="button"
             disabled={loading}
             onClick={handleFinish}
-            className="flex items-center gap-2 bg-primary text-black font-black text-sm px-7 py-3 rounded-xl shadow-[0_0_20px_rgba(124,255,61,0.4)] hover:opacity-90 disabled:opacity-50 transition-all ml-auto"
+            className="inline-flex items-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium text-sm px-7 py-2.5 rounded-full transition-all active:scale-[0.98] disabled:opacity-50 shadow-sm ml-auto"
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <Sparkles size={18} />
+                <Sparkles size={16} />
                 <span>Build My Workout</span>
               </>
             )}

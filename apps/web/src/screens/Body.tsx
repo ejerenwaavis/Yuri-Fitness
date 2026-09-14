@@ -302,9 +302,9 @@ export default function Body() {
           <div className="flex justify-end">
             <button
               onClick={openEditModal}
-              className="flex items-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
+              className="inline-flex items-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium px-4 py-2 rounded-full transition-all active:scale-[0.98] text-xs sm:text-sm shadow-sm"
             >
-              <Plus size={18} />
+              <Plus size={16} />
               <span>{t('body.logMeasurements')}</span>
             </button>
           </div>
@@ -421,16 +421,16 @@ export default function Body() {
       {activeTab === 'photos' && (
         <div className="space-y-4 animate-in fade-in duration-200">
           {/* Action Row */}
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-bold text-textPrimary">Visual Transformations</h3>
               <p className="text-sm text-textMuted">Log front, side, and back photos with dates</p>
             </div>
             <button
               onClick={() => setIsPhotoModalOpen(true)}
-              className="flex items-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
+              className="inline-flex items-center justify-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium px-4 py-2 rounded-full transition-all active:scale-[0.98] text-xs sm:text-sm self-start sm:self-auto shadow-sm shrink-0"
             >
-              <Upload size={16} />
+              <Upload size={15} />
               <span>Upload Progress Photos</span>
             </button>
           </div>
@@ -479,21 +479,21 @@ export default function Body() {
           )}
 
           {/* 2-Date Side-by-Side Comparison */}
-          <div className="bg-surface p-6 rounded-2xl border border-surfaceElevated shadow-lg space-y-5">
+          <div className="bg-surface p-4 sm:p-6 rounded-2xl border border-surfaceElevated shadow-lg space-y-5 overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surfaceElevated pb-4">
               <div className="flex items-center gap-2">
-                <ArrowRightLeft size={18} className="text-primary" />
-                <h4 className="font-bold text-base text-textPrimary">Side-by-Side Comparison</h4>
+                <ArrowRightLeft size={18} className="text-primary shrink-0" />
+                <h4 className="font-bold text-sm sm:text-base text-textPrimary">Side-by-Side Comparison</h4>
               </div>
 
-              {/* Date Selectors */}
-              <div className="flex items-center gap-3">
+              {/* Date Selectors (Responsive and non-overflowing) */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <select
                   value={compareIdA}
                   onChange={(e) => setCompareIdA(e.target.value)}
-                  className="bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                  className="flex-1 sm:flex-initial min-w-0 max-w-[145px] sm:max-w-[200px] bg-surfaceElevated border border-surfaceElevated rounded-full px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary/50 truncate cursor-pointer"
                 >
-                  <option value="">Select Date A (Before)</option>
+                  <option value="">Date A (Before)</option>
                   {progressEntries.map((entry) => (
                     <option key={entry._id || entry.id} value={entry._id || entry.id}>
                       {new Date(entry.date).toLocaleDateString()} {entry.weight ? `(${formatWeight(entry.weight)})` : ''}
@@ -501,14 +501,14 @@ export default function Body() {
                   ))}
                 </select>
 
-                <span className="text-xs text-textMuted font-bold">vs</span>
+                <span className="text-xs text-textMuted font-bold shrink-0">vs</span>
 
                 <select
                   value={compareIdB}
                   onChange={(e) => setCompareIdB(e.target.value)}
-                  className="bg-surfaceElevated border border-surfaceElevated rounded-lg px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary"
+                  className="flex-1 sm:flex-initial min-w-0 max-w-[145px] sm:max-w-[200px] bg-surfaceElevated border border-surfaceElevated rounded-full px-3 py-1.5 text-xs text-textPrimary focus:outline-none focus:border-primary/50 truncate cursor-pointer"
                 >
-                  <option value="">Select Date B (After)</option>
+                  <option value="">Date B (After)</option>
                   {progressEntries.map((entry) => (
                     <option key={entry._id || entry.id} value={entry._id || entry.id}>
                       {new Date(entry.date).toLocaleDateString()} {entry.weight ? `(${formatWeight(entry.weight)})` : ''}

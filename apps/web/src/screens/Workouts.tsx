@@ -153,16 +153,16 @@ export default function Workouts() {
         <div className="flex items-center gap-3">
           <Link
             to="/exercises"
-            className="inline-flex items-center gap-2 bg-surfaceElevated hover:bg-primary/20 text-primary border border-primary/30 font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-surfaceElevated hover:bg-primary/20 text-primary border border-primary/30 font-medium px-4 py-2 rounded-full text-xs sm:text-sm transition-colors"
           >
-            <Film size={18} />
+            <Film size={16} />
             <span className="hidden sm:inline">{t('workouts.browseLibrary')}</span>
           </Link>
           <button
             onClick={() => { setFormError(null); setIsLogModalOpen(true); }}
-            className="inline-flex items-center gap-2 bg-primary text-black font-bold px-4 py-2.5 rounded-lg shadow-[0_0_15px_rgba(124,255,61,0.3)] hover:opacity-90 transition-opacity text-sm"
+            className="inline-flex items-center gap-2 bg-black/30 hover:bg-primary/15 text-primary border border-primary/50 hover:border-primary font-medium px-4 py-2 rounded-full text-xs sm:text-sm shadow-sm transition-all active:scale-95"
           >
-            <Plus size={18} />
+            <Plus size={16} />
             <span>{t('nav.logWorkout')}</span>
           </button>
         </div>
