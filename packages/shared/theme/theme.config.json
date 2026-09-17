@@ -1,7 +1,7 @@
 {
   "colors": {
-    "primary": "#749176",
-    "primaryGlow": "rgba(116, 145, 118, 0.2)",
+    "primary": "#8CE85B",
+    "primaryGlow": "rgba(140, 232, 91, 0.2)",
     "secondaryAccent": "#00E5FF",
     "background": "#0B0D0A",
     "surface": "#1A1C19",

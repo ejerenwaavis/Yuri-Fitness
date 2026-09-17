@@ -11,7 +11,7 @@ export default defineConfig({
         name: 'Yuri Fitness',
         short_name: 'Yuri',
         description: 'Fitness tracking application',
-        theme_color: '#749176',
+        theme_color: '#8CE85B',
         background_color: '#0B0D0A',
         display: 'standalone',
         icons: [

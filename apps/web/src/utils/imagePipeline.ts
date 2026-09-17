@@ -36,7 +36,7 @@ export function getDuotoneImageUrl(
   // If already a Cloudinary image, inject named/raw transformation
   if (url.includes('cloudinary.com') && url.includes('/upload/')) {
     // Inject grayscale + contrast + green tint
-    const duotoneTransform = 'e_grayscale,e_contrast:40,co_rgb:749176,e_colorize:20,q_auto,f_auto/';
+    const duotoneTransform = 'e_grayscale,e_contrast:40,co_rgb:8ce85b,e_colorize:20,q_auto,f_auto/';
     return url.replace('/upload/', `/upload/${duotoneTransform}`);
   }
 
@@ -48,7 +48,7 @@ export function getDuotoneImageUrl(
  * Direction: left (opaque dark surface) -> right (transparent with subtle green tint).
  */
 export const HERO_OVERLAY_GRADIENT = 
-  'linear-gradient(to right, #111310 0%, rgba(17,19,16,0.85) 35%, rgba(17,19,16,0.4) 70%, rgba(116,145,118,0.08) 100%)';
+  'linear-gradient(to right, #111310 0%, rgba(17,19,16,0.85) 35%, rgba(17,19,16,0.4) 70%, rgba(140,232,91,0.08) 100%)';
 
 export const CARD_DUOTONE_OVERLAY =
-  'linear-gradient(to top, rgba(17,19,16,0.95) 0%, rgba(17,19,16,0.6) 50%, rgba(116,145,118,0.05) 100%)';
+  'linear-gradient(to top, rgba(17,19,16,0.95) 0%, rgba(17,19,16,0.6) 50%, rgba(140,232,91,0.05) 100%)';
